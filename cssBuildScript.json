@@ -1,0 +1,5 @@
+﻿{
+  "scripts": {
+    "css:build": "npx tailwindcss -i ./src/index.css -o ./src/styles.css --minify"
+  }
+}

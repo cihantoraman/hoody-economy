@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const EnhancedEconomySystem = () => {
-  // Products list with more realistic demand/supply
-  const [products, setProducts] = useState([
+const HoodyEconomicalSimulation = () => {
+  const createInitialProducts = () => ([
     { id: 1, name: "Bread", basePrice: 10, price: 10, demand: 0.8, supply: 0.7, category: "Basic" },
     { id: 2, name: "Water", basePrice: 5, price: 5, demand: 0.9, supply: 0.9, category: "Basic" },
     { id: 3, name: "Housing", basePrice: 500, price: 500, demand: 0.6, supply: 0.5, category: "Luxury" },
@@ -16,14 +15,25 @@ const EnhancedEconomySystem = () => {
     { id: 10, name: "Agricultural Products", basePrice: 50, price: 50, demand: 0.6, supply: 0.8, category: "Basic" }
   ]);
 
-  // Historical data for graphs
-  const [historicalData, setHistoricalData] = useState({
+  const createInitialHistoricalData = () => ({
     giniCoefficient: [],
     classDistribution: [],
     productPrices: {},
     averageCapital: [],
     manipulationEvents: [],
   });
+
+  const createInitialMessages = (playerCount) => ([
+    { text: "Hoody Economical Simulation initialized.", category: "system" },
+    { text: `${playerCount} players, realistic wealth distribution, and detailed penalties added.`, category: "system" },
+    { text: "Socio-economical simulation of power free life in limited world events and good.", category: "system" }
+  ]);
+
+  // Products list with more realistic demand/supply
+  const [products, setProducts] = useState(() => createInitialProducts());
+
+  // Historical data for graphs
+  const [historicalData, setHistoricalData] = useState(() => createInitialHistoricalData());
 
   // Update wealth level function with more levels
   const updateLevel = (capital) => {
@@ -36,10 +46,11 @@ const EnhancedEconomySystem = () => {
   };
 
   // Create 100 players function with more diverse distribution
-  const createPlayers = () => {
+  const createPlayers = (playerCount = 100) => {
     const strategies = ["Balanced", "Risky", "Conservative", "Aggressive", "Innovative", "Technological", "Speculative"];
     const players = [];
-    for (let i = 1; i <= 100; i++) {
+    const playerId = Math.max(1, Math.ceil(playerCount / 2));
+    for (let i = 1; i <= playerCount; i++) {
       // Create a more realistic wealth distribution
       let capital;
       if (i <= 5) {
@@ -59,7 +70,7 @@ const EnhancedEconomySystem = () => {
       const strategy = strategies[Math.floor(Math.random() * strategies.length)];
       const player = {
         id: i,
-        name: i === 50 ? "Player" : `Player ${i}`,
+        name: i === playerId ? "Player" : `Player ${i}`,
         capital: capital,
         level: updateLevel(capital),
         cycle: 1,
@@ -85,7 +96,7 @@ const EnhancedEconomySystem = () => {
   };
 
   // Players
-  const [players, setPlayers] = useState(createPlayers());
+  const [players, setPlayers] = useState(() => createPlayers(100));
 
   // System parameters with more fine-tuning options
   const [parameters, setParameters] = useState({
@@ -110,24 +121,26 @@ const EnhancedEconomySystem = () => {
     bailoutThreshold: 5,           // Percentage of players that trigger bailout
     marketVolatility: 0.5,         // Affects price movements (0.1-1.0)
     showDetailedStats: false,      // Toggle for detailed statistical view
-    autoEvents: true               // Whether random market events occur automatically
+    autoEvents: true,              // Whether random market events occur automatically
+    playerCount: 100
   });
 
   // Turn count
   const [turnCount, setTurnCount] = useState(1);
   
   // Game messages with categories
-  const [messages, setMessages] = useState([
-    { text: "Enhanced Economy System initialized with advanced features.", category: "system" },
-    { text: "100 players, realistic wealth distribution, and detailed penalties added.", category: "system" },
-    { text: "Robin Hood mode is ON by default. Click Start to begin simulation.", category: "system" }
-  ]);
+  const [messages, setMessages] = useState(() => createInitialMessages(100));
 
   // Selected player for detailed view
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [showPlayerHistory, setShowPlayerHistory] = useState(false);
+  const [showAllOffenders, setShowAllOffenders] = useState(false);
+  const [infoPanelTab, setInfoPanelTab] = useState("events");
+  const [showSystemDescription, setShowSystemDescription] = useState(false);
   
   // Active tab for statistics
   const [activeTab, setActiveTab] = useState("general");
+  const capitalTransformationRef = useRef(null);
 
   // Market events with more specific effects and targeting
   const marketEvents = [
@@ -413,63 +426,80 @@ const EnhancedEconomySystem = () => {
   // Enhanced Robin Hood mechanism with progressive rates
   const robinHoodMechanism = () => {
     if (!parameters.robinHoodModeActive) return;
-    
-    const elitePlayers = players.filter(p => p.level === "Elite" && p.penaltyTime === 0 && p.specialStatus !== "Imprisoned");
-    const richPlayers = players.filter(p => p.level === "Rich" && p.penaltyTime === 0 && p.specialStatus !== "Imprisoned");
-    const poorPlayers = players.filter(p => p.level === "Poor" && p.penaltyTime === 0);
-    const lowerMiddlePlayers = players.filter(p => p.level === "Lower Middle" && p.penaltyTime === 0);
-    
-    if ((elitePlayers.length === 0 && richPlayers.length === 0) || 
-        (poorPlayers.length === 0 && lowerMiddlePlayers.length === 0)) return;
-    
-    let totalTransfer = 0;
-    
-    // Collect from elite and rich with different rates
-    const newPlayers = [...players];
-    
-    // Higher rate from elite
-    elitePlayers.forEach(elite => {
-      const index = newPlayers.findIndex(p => p.id === elite.id);
-      const transfer = Math.round(elite.capital * parameters.eliteRobinHoodRate);
-      newPlayers[index].capital -= transfer;
-      newPlayers[index].robinHoodPoints -= transfer;
-      totalTransfer += transfer;
+
+    let redistributionSummary = null;
+
+    setPlayers(previousPlayers => {
+      const elitePlayers = previousPlayers.filter(p => p.level === "Elite" && p.penaltyTime === 0 && p.specialStatus !== "Imprisoned");
+      const richPlayers = previousPlayers.filter(p => p.level === "Rich" && p.penaltyTime === 0 && p.specialStatus !== "Imprisoned");
+      const poorPlayers = previousPlayers.filter(p => p.level === "Poor" && p.penaltyTime === 0);
+      const lowerMiddlePlayers = previousPlayers.filter(p => p.level === "Lower Middle" && p.penaltyTime === 0);
+
+      if ((elitePlayers.length === 0 && richPlayers.length === 0) ||
+          (poorPlayers.length === 0 && lowerMiddlePlayers.length === 0)) {
+        return previousPlayers;
+      }
+
+      let totalTransfer = 0;
+      const newPlayers = [...previousPlayers];
+
+      elitePlayers.forEach(elite => {
+        const index = newPlayers.findIndex(p => p.id === elite.id);
+        const transfer = Math.round(elite.capital * parameters.eliteRobinHoodRate);
+        newPlayers[index].capital -= transfer;
+        newPlayers[index].robinHoodPoints -= transfer;
+        totalTransfer += transfer;
+      });
+
+      richPlayers.forEach(rich => {
+        const index = newPlayers.findIndex(p => p.id === rich.id);
+        const transfer = Math.round(rich.capital * parameters.robinHoodRate);
+        newPlayers[index].capital -= transfer;
+        newPlayers[index].robinHoodPoints -= transfer;
+        totalTransfer += transfer;
+      });
+
+      const totalRecipients = poorPlayers.length + (lowerMiddlePlayers.length * 0.5);
+      if (totalRecipients === 0 || totalTransfer === 0) {
+        return previousPlayers;
+      }
+
+      const perPoorPersonTransfer = Math.floor(totalTransfer / totalRecipients);
+      const perLowerMiddlePersonTransfer = Math.floor(perPoorPersonTransfer * 0.5);
+
+      poorPlayers.forEach(poor => {
+        const index = newPlayers.findIndex(p => p.id === poor.id);
+        newPlayers[index].capital += perPoorPersonTransfer;
+        newPlayers[index].robinHoodPoints += perPoorPersonTransfer;
+      });
+
+      lowerMiddlePlayers.forEach(lowerMiddle => {
+        const index = newPlayers.findIndex(p => p.id === lowerMiddle.id);
+        newPlayers[index].capital += perLowerMiddlePersonTransfer;
+        newPlayers[index].robinHoodPoints += perLowerMiddlePersonTransfer;
+      });
+
+      redistributionSummary = {
+        eliteCount: elitePlayers.length,
+        richCount: richPlayers.length,
+        poorCount: poorPlayers.length,
+        lowerMiddleCount: lowerMiddlePlayers.length,
+        totalTransfer
+      };
+
+      return newPlayers;
     });
-    
-    // Standard rate from rich
-    richPlayers.forEach(rich => {
-      const index = newPlayers.findIndex(p => p.id === rich.id);
-      const transfer = Math.round(rich.capital * parameters.robinHoodRate);
-      newPlayers[index].capital -= transfer;
-      newPlayers[index].robinHoodPoints -= transfer;
-      totalTransfer += transfer;
-    });
-    
-    // Distribute, with more going to poor than lower-middle
-    const totalRecipients = poorPlayers.length + (lowerMiddlePlayers.length * 0.5); // Poor get full share, lower-middle get half
-    const perPoorPersonTransfer = Math.floor(totalTransfer / totalRecipients);
-    const perLowerMiddlePersonTransfer = Math.floor(perPoorPersonTransfer * 0.5);
-    
-    poorPlayers.forEach(poor => {
-      const index = newPlayers.findIndex(p => p.id === poor.id);
-      newPlayers[index].capital += perPoorPersonTransfer;
-      newPlayers[index].robinHoodPoints += perPoorPersonTransfer;
-    });
-    
-    lowerMiddlePlayers.forEach(lowerMiddle => {
-      const index = newPlayers.findIndex(p => p.id === lowerMiddle.id);
-      newPlayers[index].capital += perLowerMiddlePersonTransfer;
-      newPlayers[index].robinHoodPoints += perLowerMiddlePersonTransfer;
-    });
-    
-    setPlayers(newPlayers);
-    addMessage(`Robin Hood redistribution: ${totalTransfer} units transferred from ${elitePlayers.length} elite and ${richPlayers.length} rich to ${poorPlayers.length} poor and ${lowerMiddlePlayers.length} lower-middle class players.`, "system");
+
+    if (redistributionSummary) {
+      addMessage(`Robin Hood redistribution: ${redistributionSummary.totalTransfer} units transferred from ${redistributionSummary.eliteCount} elite and ${redistributionSummary.richCount} rich to ${redistributionSummary.poorCount} poor and ${redistributionSummary.lowerMiddleCount} lower-middle class players.`, "system");
+    }
   };
 
   // More dynamic product price updates with supply/demand forces
   const updateProductPrices = () => {
     setProducts(previousProducts => {
-      return previousProducts.map(product => {
+      const productHistoryEntries = [];
+      const nextProducts = previousProducts.map(product => {
         // Base forces: supply-demand imbalance
         const supplyDemandEffect = (product.demand - product.supply) * (0.1 * parameters.marketVolatility);
         
@@ -512,16 +542,10 @@ const EnhancedEconomySystem = () => {
         
         // Add price to historical data (every 10 turns)
         if (turnCount % 10 === 0) {
-          setHistoricalData(prev => {
-            const productPrices = {...prev.productPrices};
-            if (!productPrices[product.name]) {
-              productPrices[product.name] = [];
-            }
-            productPrices[product.name].push({
-              turn: turnCount,
-              price: newPrice
-            });
-            return {...prev, productPrices};
+          productHistoryEntries.push({
+            name: product.name,
+            turn: turnCount,
+            price: newPrice
           });
         }
         
@@ -532,6 +556,24 @@ const EnhancedEconomySystem = () => {
         
         return {...product, price: newPrice, demand: newDemand, supply: newSupply};
       });
+
+      if (productHistoryEntries.length > 0) {
+        setHistoricalData(prev => {
+          const productPrices = {...prev.productPrices};
+          productHistoryEntries.forEach(entry => {
+            if (!productPrices[entry.name]) {
+              productPrices[entry.name] = [];
+            }
+            productPrices[entry.name] = [
+              ...productPrices[entry.name],
+              { turn: entry.turn, price: entry.price }
+            ];
+          });
+          return {...prev, productPrices};
+        });
+      }
+
+      return nextProducts;
     });
   };
 
@@ -555,6 +597,7 @@ const EnhancedEconomySystem = () => {
   const tradeSimulation = () => {
     setPlayers(previousPlayers => {
       const newPlayers = [...previousPlayers];
+      const productAdjustments = new Map();
       
       newPlayers.forEach((player, index) => {
         if (player.penaltyTime > 0 || player.specialStatus === "Imprisoned") return; // Penalized players cannot trade
@@ -627,9 +670,9 @@ const EnhancedEconomySystem = () => {
             // Increase demand slightly
             const productIndex = products.findIndex(p => p.id === product.id);
             if (productIndex !== -1) {
-              const productsCopy = [...products];
-              productsCopy[productIndex].demand = Math.min(productsCopy[productIndex].demand + 0.02, 1);
-              setProducts(productsCopy);
+              const currentAdjustment = productAdjustments.get(product.id) || { demand: 0, supply: 0 };
+              currentAdjustment.demand += 0.02;
+              productAdjustments.set(product.id, currentAdjustment);
             }
             
           } else if (!makePurchase) {
@@ -644,14 +687,29 @@ const EnhancedEconomySystem = () => {
               // Increase supply slightly
               const productIndex = products.findIndex(p => p.id === product.id);
               if (productIndex !== -1) {
-                const productsCopy = [...products];
-                productsCopy[productIndex].supply = Math.min(productsCopy[productIndex].supply + 0.02, 1);
-                setProducts(productsCopy);
+                const currentAdjustment = productAdjustments.get(product.id) || { demand: 0, supply: 0 };
+                currentAdjustment.supply += 0.02;
+                productAdjustments.set(product.id, currentAdjustment);
               }
             }
           }
         }
       });
+
+      if (productAdjustments.size > 0) {
+        setProducts(previousProducts => previousProducts.map(product => {
+          const adjustment = productAdjustments.get(product.id);
+          if (!adjustment) {
+            return product;
+          }
+
+          return {
+            ...product,
+            demand: Math.min(product.demand + adjustment.demand, 1),
+            supply: Math.min(product.supply + adjustment.supply, 1)
+          };
+        }));
+      }
       
       return newPlayers;
     });
@@ -659,29 +717,46 @@ const EnhancedEconomySystem = () => {
 
   // System bailout for poorest players (prevents complete collapse)
   const systemBailout = () => {
-    const poorCount = players.filter(p => p.level === "Poor").length;
-    const poorPercentage = poorCount / players.length;
-    
-    if (poorPercentage >= parameters.bailoutThreshold / 100 && parameters.autoBailout) {
-      const poorPlayers = players.filter(p => p.level === "Poor");
-      const newPlayers = [...players];
-      
+    if (!parameters.autoBailout) return;
+
+    let bailoutSummary = null;
+
+    setPlayers(previousPlayers => {
+      const poorCount = previousPlayers.filter(p => p.level === "Poor").length;
+      const poorPercentage = poorCount / previousPlayers.length;
+
+      if (poorPercentage < parameters.bailoutThreshold / 100) {
+        return previousPlayers;
+      }
+
+      const poorPlayers = previousPlayers.filter(p => p.level === "Poor");
+      const newPlayers = [...previousPlayers];
       let bailoutTotal = 0;
-      
+
       poorPlayers.forEach(poor => {
         const index = newPlayers.findIndex(p => p.id === poor.id);
-        const bailoutAmount = Math.max(parameters.middleLimit - poor.capital, 0) / 2; // Halfway to Middle
-        
+        const bailoutAmount = Math.max(parameters.middleLimit - poor.capital, 0) / 2;
+
         if (bailoutAmount > 0) {
           newPlayers[index].capital += bailoutAmount;
           bailoutTotal += bailoutAmount;
         }
       });
-      
-      if (bailoutTotal > 0) {
-        setPlayers(newPlayers);
-        addMessage(`System bailout: ${Math.round(bailoutTotal)} units distributed to ${poorPlayers.length} players in poverty.`, "system");
+
+      if (bailoutTotal === 0) {
+        return previousPlayers;
       }
+
+      bailoutSummary = {
+        total: Math.round(bailoutTotal),
+        playerCount: poorPlayers.length
+      };
+
+      return newPlayers;
+    });
+
+    if (bailoutSummary) {
+      addMessage(`System bailout: ${bailoutSummary.total} units distributed to ${bailoutSummary.playerCount} players in poverty.`, "system");
     }
   };
 
@@ -689,7 +764,7 @@ const EnhancedEconomySystem = () => {
   const capitalTransformation = () => {
     // Process active events and generate new ones
     cleanupEvents();
-    const newEvent = triggerMarketEvent();
+    triggerMarketEvent();
     
     // Manipulation check
     manipulationCheck();
@@ -847,7 +922,7 @@ const EnhancedEconomySystem = () => {
 
   // Start/stop simulation
   const simulationToggle = () => {
-    setParameters({...parameters, active: !parameters.active});
+    setParameters(previousParameters => ({...previousParameters, active: !previousParameters.active}));
     if (!parameters.active) {
       addMessage("Simulation started. Economy is now running.", "system");
     } else {
@@ -857,7 +932,10 @@ const EnhancedEconomySystem = () => {
 
   // Toggle Robin Hood mode
   const robinHoodToggle = () => {
-    setParameters({...parameters, robinHoodModeActive: !parameters.robinHoodModeActive});
+    setParameters(previousParameters => ({
+      ...previousParameters,
+      robinHoodModeActive: !previousParameters.robinHoodModeActive
+    }));
     if (!parameters.robinHoodModeActive) {
       addMessage("Robin Hood mode activated. Wealth redistribution is now active.", "system");
     } else {
@@ -867,7 +945,7 @@ const EnhancedEconomySystem = () => {
 
   // Toggle auto bailout
   const bailoutToggle = () => {
-    setParameters({...parameters, autoBailout: !parameters.autoBailout});
+    setParameters(previousParameters => ({...previousParameters, autoBailout: !previousParameters.autoBailout}));
     if (!parameters.autoBailout) {
       addMessage("System bailout activated. The poorest will receive assistance.", "system");
     } else {
@@ -877,18 +955,21 @@ const EnhancedEconomySystem = () => {
 
   // Toggle detailed stats
   const toggleDetailedStats = () => {
-    setParameters({...parameters, showDetailedStats: !parameters.showDetailedStats});
+    setParameters(previousParameters => ({
+      ...previousParameters,
+      showDetailedStats: !previousParameters.showDetailedStats
+    }));
   };
 
   // Change simulation speed
   const changeSpeed = (multiplier) => {
-    setParameters({...parameters, speedMultiplier: multiplier});
+    setParameters(previousParameters => ({...previousParameters, speedMultiplier: multiplier}));
     addMessage(`Simulation speed set to ${multiplier}x`, "system");
   };
 
   // Toggle auto events
   const toggleAutoEvents = () => {
-    setParameters({...parameters, autoEvents: !parameters.autoEvents});
+    setParameters(previousParameters => ({...previousParameters, autoEvents: !previousParameters.autoEvents}));
     if (parameters.autoEvents) {
       addMessage("Automatic market events disabled.", "system");
     } else {
@@ -916,8 +997,27 @@ const EnhancedEconomySystem = () => {
 
   // Change market volatility
   const changeVolatility = (newVolatility) => {
-    setParameters({...parameters, marketVolatility: newVolatility});
+    setParameters(previousParameters => ({...previousParameters, marketVolatility: newVolatility}));
     addMessage(`Market volatility set to ${newVolatility}`, "system");
+  };
+
+  const changePlayerCount = (value) => {
+    const parsedValue = Number.parseInt(value, 10);
+    const nextValue = Number.isNaN(parsedValue) ? 1 : Math.min(Math.max(parsedValue, 1), 500);
+    setParameters(previousParameters => ({...previousParameters, playerCount: nextValue}));
+  };
+
+  const resetSimulationPopulation = () => {
+    const nextPlayers = createPlayers(parameters.playerCount);
+    setProducts(createInitialProducts());
+    setPlayers(nextPlayers);
+    setSelectedPlayer(null);
+    setShowPlayerHistory(false);
+    setTurnCount(1);
+    setActiveEvents([]);
+    setHistoricalData(createInitialHistoricalData());
+    setMessages(createInitialMessages(parameters.playerCount));
+    setParameters(previousParameters => ({...previousParameters, active: false}));
   };
 
   // Toggle player selection for detailed view
@@ -929,16 +1029,20 @@ const EnhancedEconomySystem = () => {
     }
   };
 
+  capitalTransformationRef.current = capitalTransformation;
+
   // Cyclic timer with speed control
   useEffect(() => {
     let timer;
     if (parameters.active) {
       timer = setInterval(() => {
-        capitalTransformation();
+        if (capitalTransformationRef.current) {
+          capitalTransformationRef.current();
+        }
       }, (parameters.cycleTime * 1000) / parameters.speedMultiplier);
     }
     return () => clearInterval(timer);
-  }, [parameters.active, parameters.speedMultiplier, turnCount]);
+  }, [parameters.active, parameters.cycleTime, parameters.speedMultiplier]);
 
   // Calculate economic statistics
   const economicStatistics = () => {
@@ -1022,6 +1126,9 @@ const EnhancedEconomySystem = () => {
   };
 
   const stats = economicStatistics();
+  const displayedOffenders = showAllOffenders
+    ? stats.penalizedPlayers
+    : stats.penalizedPlayers.slice(0, 5);
 
   // Helper function for capital color based on social class
   const capitalColor = (level) => {
@@ -1054,27 +1161,6 @@ const EnhancedEconomySystem = () => {
     { name: "Lower Middle", value: stats.lowerMiddleCount, color: "#ecc94b" },
     { name: "Poor", value: stats.poorCount, color: "#f56565" }
   ];
-  
-  // Generate strategy distribution data
-  const strategyDistribution = () => {
-    const counts = {
-      "Balanced": 0,
-      "Risky": 0,
-      "Conservative": 0,
-      "Aggressive": 0,
-      "Innovative": 0,
-      "Technological": 0,
-      "Speculative": 0
-    };
-    
-    players.forEach(player => {
-      if (counts[player.strategy] !== undefined) {
-        counts[player.strategy]++;
-      }
-    });
-    
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  };
   
   // GRAPHS & CHARTS
   
@@ -1131,7 +1217,7 @@ const EnhancedEconomySystem = () => {
     }));
     
     return (
-      <div className="h-64">
+      <div className="h-36">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -1225,88 +1311,225 @@ const EnhancedEconomySystem = () => {
     );
   };
 
+  const ControlIcon = ({ path, className = "w-4 h-4" }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d={path} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
   return (
     <div className="p-4 max-w-7xl mx-auto bg-gray-50">
       <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-        <h1 className="text-3xl font-bold text-center mb-2">Enhanced Gamified Economy System</h1>
-        <h2 className="text-xl text-center mb-4">Advanced Cyclical Capital Model</h2>
+            <h1 className="text-3xl font-bold text-center mb-2">Hoody Economical Simulation</h1>
+            <h2 className="text-xl text-center mb-4">Socio-economical simulation of power free life in limited world events and good.</h2>
         
-        {/* Control Panel */}
-        <div className="bg-gray-100 p-3 rounded-lg mb-4">
-          <h3 className="font-bold text-lg mb-2">Control Panel</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <button 
-              onClick={simulationToggle}
-              className={`px-4 py-2 rounded-lg font-bold ${parameters.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
-            >
-              {parameters.active ? 'Stop' : 'Start'}
-            </button>
-            
-            <button 
-              onClick={() => capitalTransformation()}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold"
-              disabled={parameters.active}
-            >
-              Manual Turn
-            </button>
-            
-            <button 
-              onClick={robinHoodToggle}
-              className={`px-4 py-2 rounded-lg font-bold ${parameters.robinHoodModeActive ? 'bg-purple-700 text-white' : 'bg-purple-500 text-white'}`}
-            >
-              {parameters.robinHoodModeActive ? 'Disable Robin Hood' : 'Enable Robin Hood'}
-            </button>
-            
-            <button 
-              onClick={bailoutToggle}
-              className={`px-4 py-2 rounded-lg font-bold ${parameters.autoBailout ? 'bg-yellow-600 text-white' : 'bg-yellow-500 text-white'}`}
-            >
-              {parameters.autoBailout ? 'Disable Bailouts' : 'Enable Bailouts'}
-            </button>
-            
-            <button 
-              onClick={toggleAutoEvents}
-              className={`px-4 py-2 rounded-lg font-bold ${parameters.autoEvents ? 'bg-teal-600 text-white' : 'bg-teal-500 text-white'}`}
-            >
-              {parameters.autoEvents ? 'Disable Events' : 'Enable Events'}
-            </button>
-            
-            <button 
-              onClick={toggleDetailedStats}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-bold"
-            >
-              {parameters.showDetailedStats ? 'Simple View' : 'Detailed View'}
-            </button>
-            
-            <div className="col-span-2 flex">
-              <span className="mr-2 flex items-center text-sm">Speed:</span>
-              {[0.5, 1, 2, 5, 10].map(speed => (
-                <button 
-                  key={speed}
-                  onClick={() => changeSpeed(speed)}
-                  className={`px-2 py-1 rounded mr-1 text-xs ${parameters.speedMultiplier === speed ? 'bg-blue-600 text-white' : 'bg-gray-300'}`}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 mb-4 items-stretch">
+          <div className="lg:col-span-3 bg-gray-100 p-3 rounded-lg h-full flex flex-col">
+            <h3 className="font-bold text-lg mb-2">Control Panel</h3>
+            <div className="space-y-2">
+              <div className="mt-1.5 flex rounded-md border border-gray-200 bg-gray-50 overflow-hidden">
+                <div className="w-12 flex items-center justify-center border-r border-gray-200 text-[9px] font-semibold text-gray-500">
+                  Pop
+                </div>
+                <div className="flex-1">
+                  <input
+                      type="number"
+                      min="1"
+                      max="500"
+                      value={parameters.playerCount}
+                      onChange={(e) => changePlayerCount(e.target.value)}
+                      className="w-full h-6 bg-transparent text-center text-[10px] outline-none"
+                  />
+                </div>
+                <button
+                    onClick={resetSimulationPopulation}
+                    className="w-12 h-7 border-l border-gray-200 bg-slate-800 text-white flex items-center justify-center"
+                    title="Apply population"
                 >
-                  {speed}x
+                  <ControlIcon path="M5 12l4 4L19 6" className="w-3 h-3" />
                 </button>
-              ))}
+              </div>
+              <div className="bg-white rounded-lg p-2">
+                <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide text-gray-500">Run</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button 
+                    onClick={simulationToggle}
+                    title={parameters.active ? 'Stop simulation' : 'Start simulation'}
+                    className={`h-10 rounded-md font-bold text-[10px] flex items-center justify-center gap-1 ${parameters.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+                  >
+                    <ControlIcon path={parameters.active ? "M7 7h10v10H7z" : "M8 5v14l11-7z"} className="w-3 h-3" />
+                    <span>{parameters.active ? 'Stop' : 'Start'}</span>
+                  </button>
+
+                  <button 
+                    onClick={() => capitalTransformation()}
+                    title="Run one manual turn"
+                    className="h-10 bg-blue-500 text-white rounded-md font-bold text-[10px] flex items-center justify-center gap-1"
+                    disabled={parameters.active}
+                  >
+                    <ControlIcon path="M5 12h14M12 5l7 7-7 7" className="w-3 h-3" />
+                    <span>Turn</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                  {[0.5, 1, 2, 5, 10].map(speed => (
+                    <button 
+                      key={speed}
+                      onClick={() => changeSpeed(speed)}
+                      className={`h-6 rounded-md text-[9px] font-bold ${parameters.speedMultiplier === speed ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-2">
+                <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide text-gray-500">Policies</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button 
+                    onClick={robinHoodToggle}
+                    title={parameters.robinHoodModeActive ? 'Disable Robin Hood mode' : 'Enable Robin Hood mode'}
+                    className={`h-6 rounded-md font-bold text-[10px] flex items-center justify-center gap-1.5 ${parameters.robinHoodModeActive ? 'bg-gray-800 text-white' : 'border border-gray-900 text-gray-600'}`}
+                  >
+                    <ControlIcon path="M12 3v18M7 8c0-2 2-3 5-3s5 1 5 3-2 3-5 3-5 1-5 3 2 3 5 3 5-1 5-3" className="w-3 h-3" />
+                    <span>Robin</span>
+                  </button>
+
+                  <button 
+                    onClick={bailoutToggle}
+                    title={parameters.autoBailout ? 'Disable bailouts' : 'Enable bailouts'}
+                    className={`h-6 rounded-md font-bold text-[10px] flex items-center justify-center gap-1.5 ${parameters.autoBailout ? 'bg-gray-800 text-white' : 'border border-gray-900 text-gray-600'}`}
+                  >
+                    <ControlIcon path="M12 3l9 4.5-9 4.5-9-4.5L12 3zm0 9v9m-5-6h10" className="w-3 h-3" />
+                    <span>Bailout</span>
+                  </button>
+
+                  <button 
+                    onClick={toggleAutoEvents}
+                    title={parameters.autoEvents ? 'Disable events' : 'Enable events'}
+                    className={`h-6 rounded-md font-bold text-[10px] flex items-center justify-center gap-1.5 ${parameters.autoEvents ? 'bg-gray-800 text-white' : 'border border-gray-900 text-gray-600'}`}
+                  >
+                    <ControlIcon path="M13 3L4 14h7l-1 7 9-11h-7l1-7z" className="w-3 h-3" />
+                    <span>Events</span>
+
+                  </button>
+                  <div className="mt-2 space-y-2 flex-1">
+                    <div className="flex items-center">
+                      <span className="mr-2 text-sm">Market Volatility:</span>
+                      <input
+                          type="range"
+                          min="0.1"
+                          max="1"
+                          step="0.1"
+                          value={parameters.marketVolatility}
+                          onChange={(e) => changeVolatility(parseFloat(e.target.value))}
+                          className="flex-grow"
+                      />
+                      <span className="ml-2 text-sm">{parameters.marketVolatility}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-2">
+                <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide text-gray-500">Setup</p>
+                <div className="grid grid-cols-1 gap-1.5 auto-rows-fr">
+                  <button 
+                    onClick={toggleDetailedStats}
+                    title={parameters.showDetailedStats ? 'Switch to simple view' : 'Switch to detailed view'}
+                    className="h-9 bg-gray-900 text-white rounded-md font-bold text-[10px] flex items-center justify-center gap-1.5"
+                  >
+                    <ControlIcon path="M4 19h16M7 16V8m5 8V5m5 11v-6" className="w-3 h-3" />
+                    <span>{parameters.showDetailedStats ? 'Simple' : 'Detail'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
+
+
           </div>
-          
-          <div className="mt-2">
-            <div className="flex items-center">
-              <span className="mr-2 text-sm">Market Volatility:</span>
-              <input 
-                type="range" 
-                min="0.1" 
-                max="1" 
-                step="0.1"
-                value={parameters.marketVolatility}
-                onChange={(e) => changeVolatility(parseFloat(e.target.value))}
-                className="flex-grow"
-              />
-              <span className="ml-2 text-sm">{parameters.marketVolatility}</span>
+
+          {stats.player && (
+            <div className="lg:col-span-7 bg-white p-4 rounded-lg shadow-sm border-2 border-blue-300 h-full flex flex-col">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
+                <div>
+                  <h3 className="font-bold text-lg">Your Player</h3>
+                  <p className="text-sm text-gray-500">Primary player controls and personal state.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {stats.player.specialStatus && (
+                    <span className={statusColor(stats.player.specialStatus)}>
+                      {stats.player.specialStatus}
+                    </span>
+                  )}
+                  <span className={`${capitalColor(stats.player.level)} text-lg`}>
+                    {stats.player.level}: {stats.player.capital.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <p className="text-gray-600 text-sm">Strategy</p>
+                  <p className="font-bold">{stats.player.strategy}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">Inventory Value</p>
+                  <p className="font-bold">{stats.player.inventoryValue.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">Robin Hood Effect</p>
+                  <p className={`font-bold ${stats.player.robinHoodPoints > 0 ? "text-green-600" : stats.player.robinHoodPoints < 0 ? "text-red-600" : ""}`}>
+                    {stats.player.robinHoodPoints > 0 ? "+" : ""}{stats.player.robinHoodPoints.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">Cycle</p>
+                  <p className="font-bold">{stats.player.cycle}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-auto">
+                <span className={
+                  stats.player.strategy === "Aggressive" ? "text-orange-600" :
+                  stats.player.strategy === "Speculative" ? "text-pink-600" :
+                  stats.player.strategy === "Risky" ? "text-yellow-600" :
+                  stats.player.strategy === "Innovative" ? "text-purple-600" :
+                  stats.player.strategy === "Technological" ? "text-teal-600" :
+                  stats.player.strategy === "Balanced" ? "text-blue-600" : "text-gray-600"
+                }>
+                  Strategy: <span className="font-bold">{stats.player.strategy}</span>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button 
+                    onClick={() => changeStrategy(stats.player.id)}
+                    title="Change player strategy"
+                    className="h-9 px-3 bg-blue-500 text-white rounded-md text-[10px] font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <ControlIcon path="M4 7h16M4 12h10M4 17h7" className="w-3 h-3" />
+                    <span>Strategy</span>
+                  </button>
+                  <button
+                    onClick={() => setShowPlayerHistory(previous => !previous)}
+                    title={showPlayerHistory ? 'Hide capital graph' : 'Show capital graph'}
+                    className="h-9 px-3 bg-slate-200 text-slate-900 rounded-md text-[10px] font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <ControlIcon path={showPlayerHistory ? "M3 12h18M6 6l12 12" : "M4 19h16M7 16V8m5 8V5m5 11v-6"} className="w-3 h-3" />
+                    <span>{showPlayerHistory ? 'Hide' : 'Graph'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {showPlayerHistory && (
+                <div className="mt-4 border-t pt-4">
+                  <p className="text-gray-600 text-sm mb-2">Capital History</p>
+                  {renderPlayerCapitalChart(stats.player)}
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
         
         {/* Main Statistics Area */}
@@ -1341,25 +1564,52 @@ const EnhancedEconomySystem = () => {
             </div>
           </div>
           
-          {/* Active Events Panel */}
+          {/* Shared Info Panel */}
           <div className="bg-white p-3 rounded-lg shadow-sm">
-            <h3 className="font-bold text-lg border-b pb-1 mb-2">Active Events</h3>
-            <div className="max-h-48 overflow-y-auto">
-              {activeEvents.length > 0 ? (
-                activeEvents.map(event => (
-                  <div key={event.id} className="mb-2 p-2 bg-yellow-50 rounded border border-yellow-200">
-                    <p className="font-semibold">{event.event}</p>
-                    <p className="text-sm">{event.description}</p>
-                    <div className="flex justify-between text-xs mt-1">
-                      <span>Effect: <span className={event.effectCapital > 0 ? "text-green-600" : "text-red-600"}>
-                        {event.effectCapital > 0 ? '+' : ''}{Math.round(event.effectCapital * 100)}%
-                      </span></span>
-                      <span>Turns left: {event.duration - (turnCount - event.startTurn)}</span>
+            <div className="flex items-center gap-2 border-b pb-2 mb-2">
+              <button
+                onClick={() => setInfoPanelTab("events")}
+                className={`px-3 py-1 rounded-md text-sm font-bold ${infoPanelTab === "events" ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-900'}`}
+              >
+                Active Events
+              </button>
+              <button
+                onClick={() => setInfoPanelTab("messages")}
+                className={`px-3 py-1 rounded-md text-sm font-bold ${infoPanelTab === "messages" ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-900'}`}
+              >
+                System Messages
+              </button>
+            </div>
+            <div className="h-48 overflow-y-auto">
+              {infoPanelTab === "events" ? (
+                activeEvents.length > 0 ? (
+                  activeEvents.map(event => (
+                    <div key={event.id} className="mb-2 p-2 bg-yellow-50 rounded border border-yellow-200">
+                      <p className="font-semibold">{event.event}</p>
+                      <p className="text-sm">{event.description}</p>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span>Effect: <span className={event.effectCapital > 0 ? "text-green-600" : "text-red-600"}>
+                          {event.effectCapital > 0 ? '+' : ''}{Math.round(event.effectCapital * 100)}%
+                        </span></span>
+                        <span>Turns left: {event.duration - (turnCount - event.startTurn)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 italic">No active market events</p>
+                )
               ) : (
-                <p className="text-center text-gray-500 italic">No active market events</p>
+                messages.map((message, index) => (
+                  <p key={index} className={`mb-1 text-sm ${
+                        message.category === "warning" ? "text-red-600" :
+                        message.category === "event" ? "text-purple-600" :
+                        message.category === "market" ? "text-green-600" :
+                        message.category === "status" ? "text-blue-600" :
+                        message.category === "player" ? "text-yellow-600" : ""
+                    }`}>
+                    {message.text}
+                  </p>
+                ))
               )}
             </div>
           </div>
@@ -1499,33 +1749,45 @@ const EnhancedEconomySystem = () => {
                       {player.capital.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className={
-                      player.strategy === "Aggressive" ? "text-orange-600" :
-                      player.strategy === "Speculative" ? "text-pink-600" :
-                      player.strategy === "Risky" ? "text-yellow-600" :
-                      player.strategy === "Innovative" ? "text-purple-600" :
-                      player.strategy === "Technological" ? "text-teal-600" :
-                      player.strategy === "Balanced" ? "text-blue-600" : "text-gray-600"
-                    }>
-                      {player.strategy}
-                    </span>
-                    <span>Inventory: {player.inventoryValue.toLocaleString()}</span>
-                  </div>
-                  {player.specialization && (
-                    <div className="text-xs text-gray-600">
-                      Specialization: {player.specialization}
+                  <div className="flex justify-between items-center text-sm gap-3">
+                    <div className="min-w-0 flex items-center gap-2 text-xs sm:text-sm">
+                      <span className={
+                        player.strategy === "Aggressive" ? "text-orange-600" :
+                        player.strategy === "Speculative" ? "text-pink-600" :
+                        player.strategy === "Risky" ? "text-yellow-600" :
+                        player.strategy === "Innovative" ? "text-purple-600" :
+                        player.strategy === "Technological" ? "text-teal-600" :
+                        player.strategy === "Balanced" ? "text-blue-600" : "text-gray-600"
+                      }>
+                        {player.strategy}
+                      </span>
+                      {player.specialization && (
+                        <span className="text-gray-500 truncate">
+                          {player.specialization}
+                        </span>
+                      )}
                     </div>
-                  )}
+                    <span className="text-right shrink-0">Inventory: {player.inventoryValue.toLocaleString()}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
           
           <div>
-            <h3 className="font-bold text-lg mb-2">Judicial System (Offenders)</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-bold text-lg">Judicial System (Offenders)</h3>
+              {stats.penalizedPlayers.length > 5 && (
+                <button
+                  onClick={() => setShowAllOffenders(previous => !previous)}
+                  className="px-3 py-1 rounded-md bg-slate-200 text-slate-900 text-xs font-bold"
+                >
+                  {showAllOffenders ? 'Show Top 5' : 'Show More'}
+                </button>
+              )}
+            </div>
             <div className="bg-white p-3 rounded-lg shadow-sm">
-              {stats.penalizedPlayers.length > 0 ? stats.penalizedPlayers.map((player) => (
+              {stats.penalizedPlayers.length > 0 ? displayedOffenders.map((player) => (
                 <div 
                   key={player.id} 
                   className="mb-2 pb-2 border-b cursor-pointer hover:bg-gray-50"
@@ -1561,103 +1823,14 @@ const EnhancedEconomySystem = () => {
           </div>
         </div>
         
-        {/* Your Player Panel */}
-        {stats.player && (
-          <div className="mb-4">
-            <h3 className="font-bold text-lg mb-2">Your Player</h3>
-            <div className="bg-white p-4 rounded-lg shadow-sm border-2 border-blue-300">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-bold text-xl">{stats.player.name}</h4>
-                <div className="flex items-center">
-                  {stats.player.specialStatus && (
-                    <span className={`mr-3 ${statusColor(stats.player.specialStatus)}`}>
-                      {stats.player.specialStatus}
-                    </span>
-                  )}
-                  <span className={`${capitalColor(stats.player.level)} text-lg`}>
-                    {stats.player.level}: {stats.player.capital.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                <div>
-                  <p className="text-gray-600 text-sm">Strategy</p>
-                  <p className="font-bold">{stats.player.strategy}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Inventory Value</p>
-                  <p className="font-bold">{stats.player.inventoryValue.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Robin Hood Effect</p>
-                  <p className={`font-bold ${stats.player.robinHoodPoints > 0 ? "text-green-600" : stats.player.robinHoodPoints < 0 ? "text-red-600" : ""}`}>
-                    {stats.player.robinHoodPoints > 0 ? "+" : ""}{stats.player.robinHoodPoints.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Cycle</p>
-                  <p className="font-bold">{stats.player.cycle}</p>
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <p className="text-gray-600 text-sm mb-1">Capital History</p>
-                <div className="h-20">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={stats.player.capitalHistory.map((value, index) => ({ turn: index, value }))}>
-                      <Line type="monotone" dataKey="value" stroke="#3182ce" dot={false} />
-                      <YAxis hide domain={['dataMin', 'dataMax']} />
-                      <Tooltip />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className={
-                  stats.player.strategy === "Aggressive" ? "text-orange-600" :
-                  stats.player.strategy === "Speculative" ? "text-pink-600" :
-                  stats.player.strategy === "Risky" ? "text-yellow-600" :
-                  stats.player.strategy === "Innovative" ? "text-purple-600" :
-                  stats.player.strategy === "Technological" ? "text-teal-600" :
-                  stats.player.strategy === "Balanced" ? "text-blue-600" : "text-gray-600"
-                }>
-                  Strategy: <span className="font-bold">{stats.player.strategy}</span>
-                </span>
-                <button 
-                  onClick={() => changeStrategy(stats.player.id)}
-                  className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
-                >
-                  Change Strategy
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* System Messages */}
-        <div>
-          <h3 className="font-bold text-lg mb-2">System Messages</h3>
-          <div className="bg-white p-3 rounded-lg shadow-sm h-40 overflow-y-auto">
-            {messages.map((message, index) => (
-              <p key={index} className={`mb-1 text-sm ${
-                    message.category === "warning" ? "text-red-600" :
-                    message.category === "event" ? "text-purple-600" :
-                    message.category === "market" ? "text-green-600" :
-                    message.category === "status" ? "text-blue-600" :
-                    message.category === "player" ? "text-yellow-600" : ""
-                }`}>
-                {message.text}
-              </p>
-            ))}
-          </div>
-        </div>
       </div>
       
-      {/* System Description */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <h3 className="font-bold text-lg mb-2">Enhanced System Description</h3>
-        <p className="mb-2">This advanced simulation models a dynamically balanced economy with cyclical capital movement. The system includes realistic supply and demand mechanics, a comprehensive judicial system for manipulation prevention, and sophisticated market events with lasting effects.</p>
+      <details className="bg-white p-4 rounded-lg shadow-md" open={showSystemDescription} onToggle={(e) => setShowSystemDescription(e.currentTarget.open)}>
+        <summary className="font-bold text-lg cursor-pointer list-none flex items-center justify-between">
+          <span>Hoody System Description</span>
+          <span className="text-sm text-gray-500">{showSystemDescription ? 'Hide' : 'Show'}</span>
+        </summary>
+        <p className="mb-2 mt-3">Socio-economical simulation of power free life in limited world events and good.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
@@ -1687,12 +1860,12 @@ const EnhancedEconomySystem = () => {
         </div>
         
         <div className="mt-4">
-          <h4 className="font-bold mb-1">Enhanced Robin Hood Model:</h4>
+          <h4 className="font-bold mb-1">Robin Hood Model:</h4>
           <p>This progressive redistribution system applies different tax rates based on wealth levels. Elite players are taxed at {parameters.eliteRobinHoodRate * 100}%, while Rich players are taxed at {parameters.robinHoodRate * 100}%. The collected funds are distributed primarily to Poor players, with Lower Middle class receiving partial benefits.</p>
         </div>
         
         <div className="mt-4">
-          <h4 className="font-bold mb-1">Advanced Judicial System:</h4>
+          <h4 className="font-bold mb-1">Judicial System:</h4>
           <p>The anti-manipulation system now includes three tiers of enforcement:</p>
           <ul className="list-disc pl-5">
             <li><span className="font-semibold">Monitoring:</span> Players showing suspicious activity gain manipulation points</li>
@@ -1710,9 +1883,9 @@ const EnhancedEconomySystem = () => {
           <h4 className="font-bold mb-1">Auto-Bailout System:</h4>
           <p>When enabled, the system provides financial assistance to players in poverty when the Poor class exceeds {parameters.bailoutThreshold}% of the population, preventing extreme inequality.</p>
         </div>
-      </div>
+      </details>
     </div>
   );
 };
 
-export default EnhancedEconomySystem;
+export default HoodyEconomicalSimulation;

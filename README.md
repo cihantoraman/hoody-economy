@@ -1,70 +1,84 @@
-# Getting Started with Create React App
+# Hoody Economy
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A gamified, cyclical-capital economy simulation. Wealth never piles up: agents keep
+trading, the rich are taxed to lift the poor, market shocks move prices, and market
+manipulation is policed. The money supply is fixed, so capital only ever moves between
+players and a shared treasury, never minted or destroyed.
 
-## Available Scripts
+It runs on a real econophysics model rather than ad-hoc rules, so the inequality it
+produces is the kind seen in actual economies.
 
-In the project directory, you can run:
+<!-- Add a screenshot here, e.g. ![Hoody Economy dashboard](docs/screenshot.png) -->
 
-### `npm start`
+## The model
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Wealth evolves through a **kinetic wealth-exchange** process from econophysics:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Each week, active agents are shuffled and paired. Every agent keeps a **saving
+  fraction** (its saving propensity, set by its strategy) and the pair randomly splits
+  the rest of their pooled wealth. A pair always conserves its total, so wealth is
+  reshuffled, never created (Chakraborti and Chakrabarti, 2000).
+- Because the saving fraction differs between strategies, the distribution develops the
+  realistic **heavy-tailed (Pareto)** shape of real economies (Chatterjee, Chakrabarti
+  and Manna, 2004).
+- On top of the exchange, a **progressive tax** on above-average wealth funds a **flat
+  transfer** (a basic income), with a **means-tested safety net** when poverty spikes.
+  Inequality is tracked with the **Gini coefficient** and class mobility with a
+  Shorrocks-style share-of-movers metric.
+- **Conservation invariant:** `sum(player.capital) + treasury` equals the fixed money
+  supply every week. This is enforced in the engine and covered by unit tests.
 
-### `npm test`
+Social classes are relative (multiples of the live average capital), so they scale with
+any population or money supply and never collapse into a single class.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### References
 
-### `npm run build`
+- A. Chakraborti, B. K. Chakrabarti (2000). *Statistical mechanics of money: how saving
+  propensity affects its distribution.* Eur. Phys. J. B 17, 167-170.
+- A. Chatterjee, B. K. Chakrabarti, S. S. Manna (2004). *Pareto law in a kinetic model of
+  market with random saving propensity.* Physica A 335, 155-163.
+- C. Gini (1912). *Variabilita e mutabilita* (the Gini coefficient).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Pure, deterministic simulation engine (`src/engine/economy.js`), unit-tested for money
+  conservation, bounded history, a non-collapsing class distribution, calm default-player
+  volatility, and a self-limiting justice system.
+- Pre-game setup: population size, market products (add or remove your own), market
+  volatility, and policy toggles (redistribution, safety net, random market events).
+- Live dashboard: your player's standing, the social-class mix, the market with
+  demand/supply, an event and message log, and analytics (Gini over time, class
+  evolution, product prices, and any player's capital history against the richest,
+  average and poorest).
+- Light and dark themes driven by a single swappable accent token.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Run locally
 
-### `npm run eject`
+Requires Node 18 or newer.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm install
+npm start      # dev server at http://localhost:3000
+npm test       # engine + app tests
+npm run build  # optimized production build into ./build
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Deploy
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+This is a static single-page app, so any static host works. Vercel is the simplest:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Push the repo to GitHub.
+2. On [vercel.com](https://vercel.com): **New Project -> Import** this repo. Vercel
+   auto-detects Create React App (build command `npm run build`, output directory
+   `build`); no configuration is needed. Click **Deploy**.
+3. You get a URL such as `hoody-economy.vercel.app`.
 
-## Learn More
+### Surfacing it on a Wix site
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Add a button or a dedicated page on Wix that links out to the Vercel URL (best for a
+wide, full-screen dashboard), or embed it inline with **Add -> Embed -> Embed a Site**
+and paste the URL into a tall frame.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## License
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT. Copyright (c) 2026 Cihan Toraman. See [LICENSE](LICENSE).

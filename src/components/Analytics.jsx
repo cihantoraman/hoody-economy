@@ -36,6 +36,15 @@ const Analytics = ({
 }) => {
   const [tab, setTab] = useState('overview');
   const pieData = TIER_NAMES.map((name) => ({ name, value: counts[name], color: tiers[name] }));
+  const capitals = players.map((player) => player.capital);
+  const avgCapital = capitals.length ? Math.round(capitals.reduce((sum, value) => sum + value, 0) / capitals.length) : 0;
+  const wealthRefs = capitals.length
+    ? [
+        { label: 'Richest', value: Math.max(...capitals), color: tiers.Rich },
+        { label: 'Average', value: avgCapital, color: chart.axis },
+        { label: 'Poorest', value: Math.min(...capitals), color: tiers.Poor },
+      ]
+    : [];
 
   return (
     <div className="mb-4 rounded-xl border border-line bg-surface shadow-card overflow-hidden" data-tour="analytics">
@@ -115,7 +124,15 @@ const Analytics = ({
                   </option>
                 ))}
               </select>
-              <CapitalChart history={selectedPlayer?.capitalHistory} chart={chart} height="h-64" />
+              <CapitalChart
+                history={selectedPlayer?.capitalHistory}
+                chart={chart}
+                height="h-64"
+                refLines={selectedPlayer ? wealthRefs : undefined}
+              />
+              <p className="text-xs text-muted mt-2">
+                Dashed lines mark the current Richest, Average and Poorest capital, so you can see where this player sits.
+              </p>
             </div>
           )}
         </div>

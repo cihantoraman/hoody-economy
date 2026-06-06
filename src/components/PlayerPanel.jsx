@@ -40,32 +40,39 @@ const PlayerPanel = ({ player, strategies, onStrategy, chart }) => {
               <span className={tierTextClass(player.level)}>{player.level}</span>
             </Row>
             <Row label="Capital" hint="Your spendable wealth right now.">
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-0.5">
                 <CoinIcon className="w-4 h-4 text-accent" />
                 <AnimatedNumber value={player.capital} />
                 <Trend value={capitalDelta} className="w-3.5 h-3.5" />
               </span>
             </Row>
             <Row label="Inventory Value" hint="Market value of the goods you are holding.">
-              <AnimatedNumber value={player.inventoryValue} />
+              <span className="inline-flex items-center gap-0.5">
+                <CoinIcon className="w-4 h-4 text-muted" />
+                <AnimatedNumber value={player.inventoryValue} />
+              </span>
             </Row>
             <Row label="Robin Hood Effect" hint="Net units you have gained from (or paid into) redistribution.">
-              <span className={robinHood > 0 ? 'text-accent' : robinHood < 0 ? 'text-danger' : ''}>
+              <span className={`inline-flex items-center gap-0.5 ${robinHood > 0 ? 'text-accent' : robinHood < 0 ? 'text-danger' : ''}`}>
+                <CoinIcon className="w-4 h-4" />
                 {robinHood > 0 ? '+' : ''}
                 {robinHood.toLocaleString()}
               </span>
             </Row>
           </div>
 
-          <div>
-            <label htmlFor="player-strategy" className="text-sm text-muted">
-              Strategy
-            </label>
+          <div className="rounded-lg border border-accent/50 bg-accent-weak p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="player-strategy" className="text-xs font-semibold uppercase tracking-wide text-accent">
+                Strategy
+              </label>
+              <span className="text-[10px] text-accent/80">click to change</span>
+            </div>
             <select
               id="player-strategy"
               value={player.strategy}
               onChange={(event) => onStrategy(player.id, event.target.value)}
-              className="mt-1 w-full h-9 px-2 rounded-md border border-line bg-surface text-sm font-semibold outline-none focus:border-accent"
+              className="w-full h-9 px-2 rounded-md border border-accent bg-surface text-sm font-semibold outline-none cursor-pointer focus:ring-2 focus:ring-accent/30"
             >
               {strategies.map((strategy) => (
                 <option key={strategy} value={strategy}>

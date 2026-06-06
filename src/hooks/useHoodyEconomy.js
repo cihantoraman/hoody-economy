@@ -26,7 +26,12 @@ export const useHoodyEconomy = () => {
   const pushMessage = (text, category = 'system') =>
     setState((current) => ({ ...current, messages: [{ text, category }, ...current.messages].slice(0, 20) }));
 
-  const step = () => setState(simulateTurn(stateRef.current, paramsRef.current));
+  const step = () => {
+    const times = Math.max(1, Math.round(paramsRef.current.speedMultiplier));
+    let next = stateRef.current;
+    for (let i = 0; i < times; i += 1) next = simulateTurn(next, paramsRef.current);
+    setState(next);
+  };
 
   useEffect(() => {
     if (!params.active) return undefined;

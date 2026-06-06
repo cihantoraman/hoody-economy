@@ -4,6 +4,7 @@
  */
 
 import Card from './ui/Card';
+import CoinIcon from './ui/CoinIcon';
 import Icon from './ui/Icon';
 import Trend from './ui/Trend';
 import { ICON } from './ui/icons';
@@ -38,7 +39,11 @@ const MarketPanel = ({ products, canEdit, onRemove }) => (
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className={`font-semibold tabular-nums inline-flex items-center gap-0.5 ${priceColor(product)}`}>
+              <span
+                title={`Current price (base ${product.basePrice})`}
+                className={`font-semibold tabular-nums inline-flex items-center gap-0.5 ${priceColor(product)}`}
+              >
+                <CoinIcon className="w-3.5 h-3.5" />
                 {product.price}
                 <Trend value={product.lastChange} />
               </span>

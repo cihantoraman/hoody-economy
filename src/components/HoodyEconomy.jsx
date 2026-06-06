@@ -90,11 +90,13 @@ const HoodyEconomy = () => {
       {!economy.started && (
         <SetupPanel
           parameters={economy.parameters}
+          products={economy.products}
           newProduct={economy.newProduct}
           onPlayerCount={economy.setPlayerCount}
           onApplyPopulation={economy.applyPopulation}
           onNewProduct={economy.setNewProduct}
           onAddProduct={economy.addProduct}
+          onRemoveProduct={economy.removeProduct}
           onToggleRobinHood={economy.toggleRobinHood}
           onToggleBailout={economy.toggleBailout}
           onToggleEvents={economy.toggleEvents}
@@ -108,6 +110,7 @@ const HoodyEconomy = () => {
       {economy.started && (
         <RuntimeBar
           active={economy.parameters.active}
+          turnCount={economy.turnCount}
           speed={economy.parameters.speedMultiplier}
           onTogglePause={economy.togglePause}
           onStep={economy.step}
@@ -128,14 +131,8 @@ const HoodyEconomy = () => {
           </Reveal>
 
           <Reveal delay={140}>
-            <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-[29rem] gap-4 mb-4">
-              <StatsPanel
-                stats={stats}
-                tiers={tiers}
-                treasury={economy.treasury}
-                mobility={economy.mobility}
-                turnCount={economy.turnCount}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] md:grid-rows-[23rem] gap-4 mb-4">
+              <StatsPanel stats={stats} tiers={tiers} treasury={economy.treasury} mobility={economy.mobility} />
               <EventLog activeEvents={economy.activeEvents} messages={economy.messages} turnCount={economy.turnCount} />
               <MarketPanel products={economy.products} canEdit={!economy.parameters.active} onRemove={economy.removeProduct} />
             </div>
@@ -157,7 +154,7 @@ const HoodyEconomy = () => {
           </Reveal>
 
           <Reveal delay={420}>
-            <Leaderboards topRichest={stats.topRichest} offenders={stats.offenders} onSelect={setSelectedId} />
+            <Leaderboards topRichest={stats.topRichest} offenders={stats.offenders} stats={stats} onSelect={setSelectedId} />
           </Reveal>
         </>
       )}

@@ -8,6 +8,12 @@ import Card from './ui/Card';
 import CoinIcon from './ui/CoinIcon';
 import { statusChipClass, tierTextClass } from '../theme/classes';
 
+const JUSTICE = [
+  { key: 'penalized', label: 'Penalized', className: 'text-warn' },
+  { key: 'imprisoned', label: 'Imprisoned', className: 'text-danger' },
+  { key: 'watchlist', label: 'Watchlist', className: 'text-warn' },
+];
+
 const Row = ({ player, onSelect, children }) => (
   <button
     onClick={() => onSelect(player.id)}
@@ -17,7 +23,7 @@ const Row = ({ player, onSelect, children }) => (
   </button>
 );
 
-const Leaderboards = ({ topRichest, offenders, onSelect }) => {
+const Leaderboards = ({ topRichest, offenders, stats, onSelect }) => {
   const [showAll, setShowAll] = useState(false);
   const shownOffenders = showAll ? offenders : offenders.slice(0, 5);
 
@@ -30,14 +36,20 @@ const Leaderboards = ({ topRichest, offenders, onSelect }) => {
             <Row key={player.id} player={player} onSelect={onSelect}>
               <div className="flex justify-between items-center">
                 <span className="font-semibold">{player.name}</span>
-                <span className={`${tierTextClass(player.level)} inline-flex items-center gap-1`}><CoinIcon className="w-3 h-3" />{player.capital.toLocaleString()}</span>
+                <span className={`${tierTextClass(player.level)} inline-flex items-center gap-0.5`}>
+                  <CoinIcon className="w-3 h-3" />
+                  {player.capital.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between text-xs text-muted mt-0.5">
                 <span>
                   {player.strategy}
                   {player.specialization ? ` · ${player.specialization}` : ''}
                 </span>
-                <span>Inventory {player.inventoryValue.toLocaleString()}</span>
+                <span className="inline-flex items-center gap-0.5">
+                  Inventory <CoinIcon className="w-3 h-3" />
+                  {player.inventoryValue.toLocaleString()}
+                </span>
               </div>
             </Row>
           ))}
@@ -45,6 +57,18 @@ const Leaderboards = ({ topRichest, offenders, onSelect }) => {
       </div>
 
       <div>
+        <h2 className="font-semibold text-lg mb-2">Justice</h2>
+        <Card className="p-3 mb-3">
+          <div className="grid grid-cols-3 gap-2">
+            {JUSTICE.map((item) => (
+              <div key={item.key} className="bg-surface-2 rounded-lg px-3 py-2">
+                <p className="text-muted text-xs">{item.label}</p>
+                <p className={`font-semibold tabular-nums ${item.className}`}>{stats[item.key]}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-semibold text-lg">Offenders</h2>
           {offenders.length > 5 && (
@@ -66,7 +90,7 @@ const Leaderboards = ({ topRichest, offenders, onSelect }) => {
                     {player.specialStatus && <span className={statusChipClass(player.specialStatus)}>{player.specialStatus}</span>}
                     {player.penaltyTime > 0 && (
                       <span className="bg-warn-weak text-warn px-2 py-0.5 rounded-md text-xs font-medium">
-                        {player.penaltyTime} turns
+                        {player.penaltyTime} weeks
                       </span>
                     )}
                   </div>
@@ -75,7 +99,10 @@ const Leaderboards = ({ topRichest, offenders, onSelect }) => {
                   <span>
                     Flags {player.manipulationPoints} · Offenses {player.imprisonmentRecord}
                   </span>
-                  <span className={`${tierTextClass(player.level)} inline-flex items-center gap-1`}><CoinIcon className="w-3 h-3" />{player.capital.toLocaleString()}</span>
+                  <span className={`${tierTextClass(player.level)} inline-flex items-center gap-0.5`}>
+                    <CoinIcon className="w-3 h-3" />
+                    {player.capital.toLocaleString()}
+                  </span>
                 </div>
               </Row>
             ))

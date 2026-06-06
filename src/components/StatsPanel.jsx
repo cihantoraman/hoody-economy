@@ -10,63 +10,49 @@ import { TIERS } from '../constants/economy';
 
 const TIER_NAMES = TIERS.map((tier) => tier.name);
 
-const JUSTICE = [
-  { key: 'penalized', label: 'Penalized', className: 'text-warn' },
-  { key: 'imprisoned', label: 'Imprisoned', className: 'text-danger' },
-  { key: 'watchlist', label: 'Watchlist', className: 'text-warn' },
-];
-
-const StatsPanel = ({ stats, tiers, treasury, mobility, turnCount }) => {
+const StatsPanel = ({ stats, tiers, treasury, mobility }) => {
   const population = TIER_NAMES.reduce((sum, name) => sum + stats.counts[name], 0) || 1;
 
   return (
     <Card className="p-4" data-tour="society">
-      <div className="flex items-end justify-between gap-3 mb-3 pb-3 border-b border-line">
-        <h2 className="font-semibold text-lg leading-none">Society</h2>
-        <div className="flex items-end gap-4 leading-none">
+      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-line">
+        <h2 className="font-semibold text-lg">Society</h2>
+        <div className="flex items-end gap-5">
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Gini</p>
-            <p className="text-sm font-semibold tabular-nums">{stats.gini}</p>
+            <p className="text-base font-semibold tabular-nums">{stats.gini}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Avg</p>
-            <p className="text-sm font-semibold tabular-nums">{stats.avgCapital.toLocaleString()}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Week</p>
-            <p className="text-2xl font-bold tabular-nums leading-none">{turnCount}</p>
+            <p className="text-base font-semibold tabular-nums inline-flex items-center gap-0.5">
+              <CoinIcon className="w-3.5 h-3.5 text-muted" />
+              {stats.avgCapital.toLocaleString()}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between items-baseline mb-1">
-        <span className="text-muted text-sm" title="Cash currently held by all players. It shifts as money moves to and from the treasury.">
-          Total capital
-        </span>
-        <span className="font-semibold text-lg tabular-nums inline-flex items-center gap-1">
-          <CoinIcon className="w-4 h-4 text-muted" />
+      <div className="mb-4">
+        <p className="text-xs text-muted mb-1" title="Cash currently held by all players.">Total capital</p>
+        <p className="font-semibold text-2xl tabular-nums inline-flex items-baseline gap-1.5 leading-none">
+          <CoinIcon className="w-5 h-5 text-muted self-center" />
           <AnimatedNumber value={Math.round(stats.totalCapital)} />
-        </span>
-      </div>
-      <div className="flex justify-between text-xs text-muted mb-1">
-        <span title="The market and redistribution buffer. It is recycled back to players every turn, so it stays small.">
-          Treasury {Math.round(treasury).toLocaleString()}
-        </span>
-        <span title="Total money in the system (capital + treasury). This never changes.">
-          Fixed supply {Math.round(stats.totalCapital + treasury).toLocaleString()}
-        </span>
-      </div>
-      <div className="flex justify-between text-xs text-muted mb-4">
-        <span title="Share of players who changed class this turn — how fluid the society is.">
-          Mobility {Math.round((mobility ?? 0) * 100)}%
-        </span>
-        <span title="Inequality, from 0 (everyone equal) to 1 (one person owns everything).">
-          Gini {stats.gini}
-        </span>
+        </p>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted mt-2">
+          <span title="The market and redistribution buffer, recycled each week.">
+            Treasury <span className="inline-flex items-center gap-0.5"><CoinIcon className="w-3 h-3" />{Math.round(treasury).toLocaleString()}</span>
+          </span>
+          <span title="Total money in the system (capital + treasury). This never changes.">
+            Fixed supply <span className="inline-flex items-center gap-0.5"><CoinIcon className="w-3 h-3" />{Math.round(stats.totalCapital + treasury).toLocaleString()}</span>
+          </span>
+          <span title="Share of players who changed class this week.">
+            Mobility {Math.round((mobility ?? 0) * 100)}%
+          </span>
+        </div>
       </div>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Classes</p>
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2">
         {TIER_NAMES.map((name) => {
           const count = stats.counts[name];
           const pct = Math.round((count / population) * 100);
@@ -81,16 +67,6 @@ const StatsPanel = ({ stats, tiers, treasury, mobility, turnCount }) => {
             </div>
           );
         })}
-      </div>
-
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Justice</p>
-      <div className="grid grid-cols-3 gap-2">
-        {JUSTICE.map((item) => (
-          <div key={item.key} className="bg-surface-2 rounded-lg px-3 py-2">
-            <p className="text-muted text-xs">{item.label}</p>
-            <p className={`font-semibold tabular-nums ${item.className}`}>{stats[item.key]}</p>
-          </div>
-        ))}
       </div>
     </Card>
   );

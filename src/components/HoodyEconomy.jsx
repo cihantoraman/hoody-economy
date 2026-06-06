@@ -41,7 +41,6 @@ const Reveal = ({ delay = 0, children }) => (
 const HoodyEconomy = () => {
   const { theme, toggleTheme } = useTheme();
   const economy = useHoodyEconomy();
-  const [showHistory, setShowHistory] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [tutorialSeen, setTutorialSeen] = useState(readTutorialSeen);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -126,8 +125,6 @@ const HoodyEconomy = () => {
               player={stats.player}
               strategies={STRATEGIES}
               onStrategy={economy.setPlayerStrategy}
-              showHistory={showHistory}
-              onToggleHistory={() => setShowHistory((value) => !value)}
               chart={chart}
             />
           </Reveal>

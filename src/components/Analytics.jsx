@@ -44,8 +44,11 @@ const Analytics = ({
         onClick={onToggle}
         className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-line bg-surface shadow-card hover:bg-surface-2"
       >
-        <span className="font-semibold text-lg">Analytics</span>
-        <span className="flex items-center gap-2 text-sm font-semibold text-muted">
+        <span className="flex items-baseline gap-2 min-w-0">
+          <span className="font-semibold text-lg">Analytics</span>
+          <span className="text-xs text-muted truncate hidden sm:inline">Overview · Classes · Prices · Player</span>
+        </span>
+        <span className="flex items-center gap-2 text-sm font-semibold text-muted shrink-0">
           {open ? 'Hide charts' : 'Show charts'}
           <Icon path={open ? ICON.arrowUp : ICON.arrowDown} className="w-4 h-4" />
         </span>

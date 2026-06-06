@@ -3,20 +3,10 @@
  * Copyright (c) 2026 Cihan Toraman
  */
 
-import { STRATEGIES, TIERS } from '../constants/economy';
+import { STRATEGIES, STRATEGY_NOTES, TIERS } from '../constants/economy';
 import { tierTextClass } from '../theme/classes';
 import Icon from './ui/Icon';
 import { ICON } from './ui/icons';
-
-const STRATEGY_NOTES = {
-  Balanced: 'Medium risk, steady returns.',
-  Risky: 'Big swings with strong upside.',
-  Conservative: 'Low risk, slow growth.',
-  Aggressive: 'Maximum volatility and upside.',
-  Innovative: 'Gains from tech advances.',
-  Technological: 'Focused on tech markets.',
-  Speculative: 'Profits from bubbles and crashes.',
-};
 
 const SystemGuide = ({ parameters, open, onToggle }) => (
   <div className="bg-surface rounded-xl border border-line shadow-card">

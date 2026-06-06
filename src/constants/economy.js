@@ -13,6 +13,16 @@ export const STRATEGIES = [
   'Speculative',
 ];
 
+export const STRATEGY_NOTES = {
+  Balanced: 'Medium risk, steady returns.',
+  Risky: 'Big swings with strong upside.',
+  Conservative: 'Low risk, slow growth.',
+  Aggressive: 'Maximum volatility and upside.',
+  Innovative: 'Gains from tech advances.',
+  Technological: 'Focused on tech markets.',
+  Speculative: 'Profits from bubbles and crashes.',
+};
+
 export const PRODUCT_CATEGORIES = ['Basic', 'Luxury', 'Technology', 'Service', 'Utility'];
 
 // Wealth tiers, richest first, as multiples of the average capital. Classes are
@@ -171,5 +181,5 @@ export const createInitialHistoricalData = () => ({
 export const createInitialMessages = (playerCount) => [
   { text: 'Economy initialized.', category: 'system' },
   { text: `${playerCount} players seeded with a realistic wealth distribution.`, category: 'system' },
-  { text: 'Press Start to let the cycle run.', category: 'system' },
+  { text: 'Press Ready, then Play to let the cycle run.', category: 'system' },
 ];

@@ -171,24 +171,11 @@ const stepPrices = (products, historical, params, turn, log) => {
       Math.round(product.basePrice * 2.5),
     );
 
-    let demand = product.demand;
-    let supply = product.supply;
-    if (price > product.basePrice * 1.5) {
-      demand = Math.max(demand - Math.random() * 0.05, 0.1);
-      supply = Math.min(supply + Math.random() * 0.05, 1);
-    } else if (price < product.basePrice * 0.7) {
-      demand = Math.min(demand + Math.random() * 0.05, 1);
-      supply = Math.max(supply - Math.random() * 0.05, 0.1);
-    } else {
-      demand = clamp(demand + (Math.random() - 0.5) * 0.03, 0.1, 1);
-      supply = clamp(supply + (Math.random() - 0.5) * 0.03, 0.1, 1);
-    }
-
     if (turn % 10 === 0) samples.push({ name: product.name, price });
     if (Math.abs(price - product.price) / product.price > 0.1) {
       log(`${product.name} price ${price > product.price ? 'increased' : 'decreased'} from ${product.price} to ${price}`, 'market');
     }
-    return { ...product, price, demand, supply, lastChange: price - product.price };
+    return { ...product, price, lastChange: price - product.price };
   });
 
   let nextHistorical = historical;
@@ -290,11 +277,11 @@ const stepManipulation = (players, params, turn, log) => {
 
 const stepTrades = (players, products, activeEvents) => {
   let treasuryDelta = 0;
-  const adjustments = new Map();
-  const bump = (id, key) => {
-    const current = adjustments.get(id) ?? { demand: 0, supply: 0 };
-    current[key] += 0.02;
-    adjustments.set(id, current);
+  const flow = new Map();
+  const record = (id, key) => {
+    const current = flow.get(id) ?? { buys: 0, sells: 0 };
+    current[key] += 1;
+    flow.set(id, current);
   };
 
   const next = players.map((player) => {
@@ -329,7 +316,7 @@ const stepTrades = (players, products, activeEvents) => {
           ? player.inventory.map((item, index) => (index === slot ? { ...item, quantity: item.quantity + 1 } : item))
           : [...player.inventory, { productId: product.id, quantity: 1 }];
       treasuryDelta += product.price;
-      bump(product.id, 'demand');
+      record(product.id, 'buys');
       return { ...player, capital: player.capital - product.price, inventory };
     }
 
@@ -339,22 +326,24 @@ const stepTrades = (players, products, activeEvents) => {
       index === slot ? { ...item, quantity: item.quantity - 1 } : item,
     );
     treasuryDelta -= product.price;
-    bump(product.id, 'supply');
+    record(product.id, 'sells');
     return { ...player, capital: player.capital + product.price, inventory };
   });
 
-  let nextProducts = products;
-  if (adjustments.size) {
-    nextProducts = products.map((product) => {
-      const adjustment = adjustments.get(product.id);
-      if (!adjustment) return product;
-      return {
-        ...product,
-        demand: Math.min(product.demand + adjustment.demand, 1),
-        supply: Math.min(product.supply + adjustment.supply, 1),
-      };
-    });
-  }
+  // Demand and supply ease toward a neutral baseline each week, then respond to
+  // how many players actually bought or sold this product. This keeps the meters
+  // oscillating in a readable mid-range instead of pinning at 100%.
+  const traders = Math.max(players.length, 1);
+  const nextProducts = products.map((product) => {
+    const f = flow.get(product.id) ?? { buys: 0, sells: 0 };
+    const targetDemand = clamp(0.4 + (f.buys / traders) * 10, 0.1, 0.9);
+    const targetSupply = clamp(0.4 + (f.sells / traders) * 10, 0.1, 0.9);
+    return {
+      ...product,
+      demand: clamp(product.demand + 0.3 * (targetDemand - product.demand), 0.1, 0.9),
+      supply: clamp(product.supply + 0.3 * (targetSupply - product.supply), 0.1, 0.9),
+    };
+  });
 
   return { players: next, products: nextProducts, treasuryDelta };
 };

@@ -70,3 +70,18 @@ test('a turn advances state immutably and keeps the population', () => {
   expect(after.players.find((p) => p.name === 'Player')).toBeTruthy();
   expect(before.turn).toBe(1); // original state untouched
 });
+
+test('market demand and supply oscillate in a readable mid-range, never pinned at the cap', () => {
+  let state = seedState(100);
+  for (let i = 0; i < 200; i += 1) state = simulateTurn(state, DEFAULT_PARAMETERS);
+  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const demands = state.products.map((p) => p.demand);
+  const supplies = state.products.map((p) => p.supply);
+  [...demands, ...supplies].forEach((value) => {
+    expect(value).toBeGreaterThanOrEqual(0.1);
+    expect(value).toBeLessThanOrEqual(0.9);
+  });
+  // The whole market should not be pinned near the top, the way the old monotonic model did.
+  expect(mean(demands)).toBeLessThan(0.85);
+  expect(mean(supplies)).toBeLessThan(0.85);
+});

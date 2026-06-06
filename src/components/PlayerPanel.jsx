@@ -9,14 +9,15 @@ import CoinIcon from './ui/CoinIcon';
 import Icon from './ui/Icon';
 import Trend from './ui/Trend';
 import { ICON } from './ui/icons';
+import { STRATEGY_NOTES } from '../constants/economy';
 import { statusChipClass, tierTextClass } from '../theme/classes';
 
-const Stat = ({ label, hint, children }) => (
-  <div className="bg-surface px-3 py-2.5">
-    <p className="text-muted text-xs mb-1" title={hint}>
+const MoneyRow = ({ label, hint, children }) => (
+  <div className="flex items-baseline gap-3 px-3 py-2.5">
+    <span className="text-sm text-muted w-32 shrink-0" title={hint}>
       {label}
-    </p>
-    {children}
+    </span>
+    <span className="font-semibold tabular-nums">{children}</span>
   </div>
 );
 
@@ -25,59 +26,58 @@ const PlayerPanel = ({ player, strategies, onStrategy, showHistory, onToggleHist
 
   const history = player.capitalHistory ?? [];
   const capitalDelta = history.length >= 2 ? history[history.length - 1] - history[history.length - 2] : 0;
+  const robinHood = player.robinHoodPoints;
 
   return (
     <section data-tour="player" className="bg-surface rounded-xl border border-accent shadow-card p-4 md:p-5 mb-4">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
-        <div>
-          <h2 className="font-semibold text-lg">Your Player</h2>
-          <p className="text-sm text-muted">Your personal position in the economy.</p>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Your standing</h2>
+        <div className="flex items-center gap-2">
           {player.specialStatus && <span className={statusChipClass(player.specialStatus)}>{player.specialStatus}</span>}
-          <span className={`${tierTextClass(player.level)} text-lg font-semibold`}>{player.level}</span>
+          <span className={`${tierTextClass(player.level)} text-sm font-semibold`}>{player.level}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px rounded-lg overflow-hidden bg-line border border-line">
-        <Stat label="Capital" hint="This player's spendable wealth right now.">
-          <p className="font-semibold text-lg h-7 flex items-center gap-1 tabular-nums">
-            <CoinIcon className="w-4 h-4 text-accent" />
-            <AnimatedNumber value={player.capital} />
-            <Trend value={capitalDelta} className="w-3.5 h-3.5" />
-          </p>
-        </Stat>
-        <Stat label="Inventory Value" hint="Market value of the goods this player is currently holding.">
-          <p className="font-semibold text-lg h-7 flex items-center tabular-nums">
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="rounded-lg border border-line divide-y divide-line md:shrink-0">
+          <MoneyRow label="Capital" hint="Your spendable wealth right now.">
+            <span className="inline-flex items-center gap-1">
+              <CoinIcon className="w-4 h-4 text-accent" />
+              <AnimatedNumber value={player.capital} />
+              <Trend value={capitalDelta} className="w-3.5 h-3.5" />
+            </span>
+          </MoneyRow>
+          <MoneyRow label="Inventory Value" hint="Market value of the goods you are holding.">
             <AnimatedNumber value={player.inventoryValue} />
-          </p>
-        </Stat>
-        <Stat label="Robin Hood Effect" hint="Net units this player has gained from (or paid into) wealth redistribution.">
-          <p
-            className={`font-semibold text-lg h-7 flex items-center tabular-nums ${
-              player.robinHoodPoints > 0 ? 'text-accent' : player.robinHoodPoints < 0 ? 'text-danger' : ''
-            }`}
-          >
-            {player.robinHoodPoints > 0 ? '+' : ''}
-            {player.robinHoodPoints.toLocaleString()}
-          </p>
-        </Stat>
-        <Stat label="Strategy" hint="How aggressively this player trades and takes risks each turn.">
-          <select
-            value={player.strategy}
-            onChange={(event) => onStrategy(player.id, event.target.value)}
-            className="w-full h-7 rounded-md border border-line bg-surface text-sm font-semibold outline-none focus:border-accent"
-          >
-            {strategies.map((strategy) => (
-              <option key={strategy} value={strategy}>
-                {strategy}
-              </option>
-            ))}
-          </select>
-        </Stat>
-        <Stat label="Cycle" hint="How many turns this player has been active.">
-          <p className="font-semibold text-lg h-7 flex items-center tabular-nums">{player.cycle}</p>
-        </Stat>
+          </MoneyRow>
+          <MoneyRow label="Robin Hood Effect" hint="Net units you have gained from (or paid into) redistribution.">
+            <span className={robinHood > 0 ? 'text-accent' : robinHood < 0 ? 'text-danger' : ''}>
+              {robinHood > 0 ? '+' : ''}
+              {robinHood.toLocaleString()}
+            </span>
+          </MoneyRow>
+        </div>
+
+        <div className="rounded-lg border border-line p-3 flex-1">
+          <label htmlFor="player-strategy" className="text-sm text-muted">
+            Strategy
+          </label>
+          <div className="flex items-center gap-3 mt-1">
+            <select
+              id="player-strategy"
+              value={player.strategy}
+              onChange={(event) => onStrategy(player.id, event.target.value)}
+              className="w-48 h-9 px-2 rounded-md border border-line bg-surface text-sm font-semibold outline-none focus:border-accent"
+            >
+              {strategies.map((strategy) => (
+                <option key={strategy} value={strategy}>
+                  {strategy}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted">{STRATEGY_NOTES[player.strategy]}</p>
+          </div>
+        </div>
       </div>
 
       <button

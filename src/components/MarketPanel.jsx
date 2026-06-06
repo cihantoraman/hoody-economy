@@ -25,12 +25,14 @@ const priceColor = (product) => {
   return 'text-fg';
 };
 
-const MarketPanel = ({ products, canEdit, onRemove }) => (
-  <Card className="p-4 flex flex-col md:h-full">
-    <h2 className="font-semibold text-lg mb-3">Market</h2>
+const MarketPanel = ({ products, canEdit, onRemove, variant = 'panel' }) => {
+  const setup = variant === 'setup';
+  const rowClass = setup ? 'bg-surface' : 'bg-surface-2';
+
+  const list = (
     <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5">
       {products.map((product) => (
-        <div key={product.id} className="rounded-lg bg-surface-2 px-3 py-2">
+        <div key={product.id} className={`rounded-lg ${rowClass} px-3 py-2`}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-sm truncate">{product.name}</span>
@@ -61,7 +63,23 @@ const MarketPanel = ({ products, canEdit, onRemove }) => (
         </div>
       ))}
     </div>
-  </Card>
-);
+  );
+
+  if (setup) {
+    return (
+      <div className="bg-surface-2 rounded-lg p-3 flex flex-col h-full">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Market</p>
+        {list}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="p-4 flex flex-col md:h-full">
+      <h2 className="font-semibold text-lg mb-3">Market</h2>
+      {list}
+    </Card>
+  );
+};
 
 export default MarketPanel;

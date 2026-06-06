@@ -89,7 +89,7 @@ const SetupPanel = ({
         </div>
 
         <div className="flex-1 min-w-0 md:h-[27rem]">
-          <MarketPanel products={products} canEdit onRemove={onRemoveProduct} />
+          <MarketPanel products={products} canEdit onRemove={onRemoveProduct} variant="setup" />
         </div>
 
         <div className="flex flex-col gap-3 md:w-60 md:shrink-0">

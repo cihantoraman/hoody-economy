@@ -16,12 +16,28 @@ const JUSTICE = [
   { key: 'watchlist', label: 'Watchlist', className: 'text-warn' },
 ];
 
-const StatsPanel = ({ stats, tiers, treasury, mobility }) => {
+const StatsPanel = ({ stats, tiers, treasury, mobility, turnCount }) => {
   const population = TIER_NAMES.reduce((sum, name) => sum + stats.counts[name], 0) || 1;
 
   return (
     <Card className="p-4" data-tour="society">
-      <h2 className="font-semibold text-lg mb-3">Society</h2>
+      <div className="flex items-end justify-between gap-3 mb-3 pb-3 border-b border-line">
+        <h2 className="font-semibold text-lg leading-none">Society</h2>
+        <div className="flex items-end gap-4 leading-none">
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Gini</p>
+            <p className="text-sm font-semibold tabular-nums">{stats.gini}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Avg</p>
+            <p className="text-sm font-semibold tabular-nums">{stats.avgCapital.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wide text-muted mb-1">Week</p>
+            <p className="text-2xl font-bold tabular-nums leading-none">{turnCount}</p>
+          </div>
+        </div>
+      </div>
 
       <div className="flex justify-between items-baseline mb-1">
         <span className="text-muted text-sm" title="Cash currently held by all players. It shifts as money moves to and from the treasury.">

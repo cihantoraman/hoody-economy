@@ -28,13 +28,13 @@
 
   --info: #2563eb;
 
-  /* Wealth tiers: red (Poor) through blue to purple (Elite), equal hue steps. */
-  --tier-poor: #c32222;
-  --tier-lower: #c3b822;
-  --tier-middle: #38c322;
-  --tier-upper: #22c3a3;
-  --tier-rich: #224dc3;
-  --tier-elite: #8e22c3;
+  /* Wealth tiers: harmonious warm-to-cool ramp at constant lightness. */
+  --tier-poor: #d4756b;
+  --tier-lower: #d49d5a;
+  --tier-middle: #a3b75f;
+  --tier-upper: #5fb19a;
+  --tier-rich: #6f8fce;
+  --tier-elite: #a684c5;
 }
 
 .dark {
@@ -58,13 +58,13 @@
 
   --info: #60a5fa;
 
-  /* Wealth tiers: red (Poor) through blue to purple (Elite), equal hue steps. */
-  --tier-poor: #e05252;
-  --tier-lower: #e0d752;
-  --tier-middle: #65e052;
-  --tier-upper: #52e0c4;
-  --tier-rich: #5278e0;
-  --tier-elite: #b152e0;
+  /* Wealth tiers: harmonious warm-to-cool ramp at constant lightness. */
+  --tier-poor: #e89992;
+  --tier-lower: #e8bc7f;
+  --tier-middle: #c2d18a;
+  --tier-upper: #85cdb8;
+  --tier-rich: #94aee0;
+  --tier-elite: #bda2d6;
 }
 
 /* Make bare borders (border, border-b ...) use the themed line color. */

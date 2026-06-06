@@ -3,23 +3,24 @@
  * Copyright (c) 2026 Cihan Toraman
  */
 
-// Ordered ramp from red (Poor) through blue to purple (Elite), equal hue steps.
+// Same-lightness, same-saturation ramp. Hue sweeps warm (Poor) to cool (Elite),
+// so stacked classes read as one harmonious family instead of a clown rainbow.
 const TIER_LIGHT = {
-  Poor: '#c32222',
-  'Lower Middle': '#c3b822',
-  Middle: '#38c322',
-  'Upper Middle': '#22c3a3',
-  Rich: '#224dc3',
-  Elite: '#8e22c3',
+  Poor: '#d4756b',
+  'Lower Middle': '#d49d5a',
+  Middle: '#a3b75f',
+  'Upper Middle': '#5fb19a',
+  Rich: '#6f8fce',
+  Elite: '#a684c5',
 };
 
 const TIER_DARK = {
-  Poor: '#e05252',
-  'Lower Middle': '#e0d752',
-  Middle: '#65e052',
-  'Upper Middle': '#52e0c4',
-  Rich: '#5278e0',
-  Elite: '#b152e0',
+  Poor: '#e89992',
+  'Lower Middle': '#e8bc7f',
+  Middle: '#c2d18a',
+  'Upper Middle': '#85cdb8',
+  Rich: '#94aee0',
+  Elite: '#bda2d6',
 };
 
 // Vivid, well-separated colors for the multi-series price chart.

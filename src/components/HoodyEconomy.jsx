@@ -87,20 +87,6 @@ const HoodyEconomy = () => {
     <div className="p-4 md:p-6 max-w-7xl mx-auto bg-bg text-fg min-h-screen">
       <Header theme={theme} onToggleTheme={toggleTheme} />
 
-      <RuntimeBar
-        started={economy.started}
-        active={economy.parameters.active}
-        turnCount={economy.turnCount}
-        gini={stats.gini}
-        avgCapital={stats.avgCapital}
-        speed={economy.parameters.speedMultiplier}
-        onStart={economy.start}
-        onTogglePause={economy.togglePause}
-        onStep={economy.step}
-        onRestart={economy.restart}
-        onSpeed={economy.setSpeed}
-      />
-
       {!economy.started && (
         <SetupPanel
           parameters={economy.parameters}
@@ -114,7 +100,19 @@ const HoodyEconomy = () => {
           onToggleEvents={economy.toggleEvents}
           onVolatility={economy.setVolatility}
           onResetTutorial={resetTutorial}
+          onStart={economy.start}
           tutorialSeen={tutorialSeen}
+        />
+      )}
+
+      {economy.started && (
+        <RuntimeBar
+          active={economy.parameters.active}
+          speed={economy.parameters.speedMultiplier}
+          onTogglePause={economy.togglePause}
+          onStep={economy.step}
+          onRestart={economy.restart}
+          onSpeed={economy.setSpeed}
         />
       )}
 
@@ -131,7 +129,13 @@ const HoodyEconomy = () => {
 
           <Reveal delay={140}>
             <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-[29rem] gap-4 mb-4">
-              <StatsPanel stats={stats} tiers={tiers} treasury={economy.treasury} mobility={economy.mobility} />
+              <StatsPanel
+                stats={stats}
+                tiers={tiers}
+                treasury={economy.treasury}
+                mobility={economy.mobility}
+                turnCount={economy.turnCount}
+              />
               <EventLog activeEvents={economy.activeEvents} messages={economy.messages} turnCount={economy.turnCount} />
               <MarketPanel products={economy.products} canEdit={!economy.parameters.active} onRemove={economy.removeProduct} />
             </div>

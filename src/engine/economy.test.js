@@ -72,6 +72,26 @@ test('a turn advances state immutably and keeps the population', () => {
   expect(before.turn).toBe(1); // original state untouched
 });
 
+test('the default (Balanced) player has a calm, stable week-to-week ride', () => {
+  let state = seedState(100); // the human player defaults to the Balanced strategy
+  const human = () => state.players.find((p) => p.name === 'Player');
+  let prev = human().capital;
+  const changes = [];
+  for (let i = 0; i < 400; i += 1) {
+    state = simulateTurn(state, DEFAULT_PARAMETERS);
+    const cur = human().capital;
+    changes.push(Math.abs(cur - prev) / prev);
+    prev = cur;
+  }
+  changes.sort((a, b) => a - b);
+  const median = changes[Math.floor(changes.length * 0.5)];
+  const p90 = changes[Math.floor(changes.length * 0.9)];
+  // Typical week is a small move; even the rough weeks stay well short of the old
+  // 50-70% swings. Generous bounds (observed ~6% median, ~20% p90) keep this stable.
+  expect(median).toBeLessThan(0.18);
+  expect(p90).toBeLessThan(0.55);
+});
+
 test('market demand and supply oscillate in a readable mid-range, never pinned at the cap', () => {
   let state = seedState(100);
   for (let i = 0; i < 200; i += 1) state = simulateTurn(state, DEFAULT_PARAMETERS);

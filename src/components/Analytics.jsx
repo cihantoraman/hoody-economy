@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import Card from './ui/Card';
 import Icon from './ui/Icon';
 import { ICON } from './ui/icons';
 import CapitalChart from './charts/CapitalChart';
@@ -39,14 +38,18 @@ const Analytics = ({
   const pieData = TIER_NAMES.map((name) => ({ name, value: counts[name], color: tiers[name] }));
 
   return (
-    <div className="mb-4" data-tour="analytics">
+    <div className="mb-4 rounded-xl border border-line bg-surface shadow-card overflow-hidden" data-tour="analytics">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-line bg-surface shadow-card hover:bg-surface-2"
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-2 ${
+          open ? 'border-b border-line' : ''
+        }`}
       >
         <span className="flex items-baseline gap-2 min-w-0">
           <span className="font-semibold text-lg">Analytics</span>
-          <span className="text-xs text-muted truncate hidden sm:inline">Overview · Classes · Prices · Player</span>
+          {!open && (
+            <span className="text-xs text-muted truncate hidden sm:inline">Overview · Classes · Prices · Player</span>
+          )}
         </span>
         <span className="flex items-center gap-2 text-sm font-semibold text-muted shrink-0">
           {open ? 'Hide charts' : 'Show charts'}
@@ -55,7 +58,7 @@ const Analytics = ({
       </button>
 
       {open && (
-        <Card className="p-4 mt-3">
+        <div className="p-4">
           <div className="flex gap-1 border-b border-line mb-3">
             {TABS.map(({ id, label }) => (
               <button
@@ -115,7 +118,7 @@ const Analytics = ({
               <CapitalChart history={selectedPlayer?.capitalHistory} chart={chart} height="h-64" />
             </div>
           )}
-        </Card>
+        </div>
       )}
     </div>
   );

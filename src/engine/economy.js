@@ -32,13 +32,13 @@ const meanCapital = (players) => (players.length ? players.reduce((sum, p) => su
 // Saving propensity per strategy: the share of wealth an agent keeps out of an
 // exchange. Low saving means more is risked, so swings are larger.
 const SAVING = {
-  Conservative: 0.92,
-  Balanced: 0.85,
-  Technological: 0.8,
-  Innovative: 0.75,
-  Risky: 0.68,
-  Aggressive: 0.6,
-  Speculative: 0.5,
+  Conservative: 0.93,
+  Balanced: 0.9,
+  Technological: 0.86,
+  Innovative: 0.83,
+  Risky: 0.78,
+  Aggressive: 0.74,
+  Speculative: 0.7,
 };
 
 const TRADE_PROBABILITY = {
@@ -87,7 +87,7 @@ const createPlayers = (count, products) => {
       capital,
       level: 'Middle',
       cycle: 1,
-      strategy: STRATEGIES[randInt(STRATEGIES.length)],
+      strategy: id === playerSlot ? 'Balanced' : STRATEGIES[randInt(STRATEGIES.length)],
       inventory: products.map((product) => ({ productId: product.id, quantity: randInt(5) })),
       inventoryValue: 0,
       manipulationPoints: 0,
@@ -309,7 +309,9 @@ const stepTrades = (players, products, activeEvents) => {
     const buying = Math.random() < buyProbability;
 
     if (buying) {
-      if (player.capital < product.price) return player;
+      // Only buy what is comfortably affordable, so one purchase never swings
+      // capital too hard: a low-capital player will not splurge on a 500 good.
+      if (player.capital < product.price * 2.5) return player;
       const slot = player.inventory.findIndex((item) => item.productId === product.id);
       const inventory =
         slot !== -1

@@ -76,10 +76,11 @@ const SystemGuide = ({ parameters, open, onToggle }) => (
         </div>
 
         <p className="text-xs text-muted mt-4 pt-4 border-t border-line">
-          Model: wealth moves through a kinetic exchange (Chakraborti and Chakrabarti, 2000), where paired agents keep a
-          saving fraction set by their strategy and randomly split the rest. This yields the realistic heavy-tailed
-          (Pareto) wealth distribution seen in real economies. Inequality is tracked with the Gini coefficient and
-          tempered by a progressive tax and flat transfer. Money is conserved every week.
+          Model: wealth moves through a kinetic exchange where paired agents keep a saving fraction set by their
+          strategy and randomly split the rest (Chakraborti and Chakrabarti, 2000). Because that saving fraction differs
+          between strategies, the distribution develops the realistic heavy-tailed (Pareto) shape of real economies
+          (Chatterjee, Chakrabarti and Manna, 2004). Inequality is tracked with the Gini coefficient and tempered by a
+          progressive tax and flat transfer, and total money is conserved every week.
         </p>
       </div>
     )}

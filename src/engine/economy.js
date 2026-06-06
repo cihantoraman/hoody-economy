@@ -122,12 +122,6 @@ export const seedState = (playerCount) => {
   };
 };
 
-const targetsPlayer = (event, player) =>
-  event.target === 'Everyone' ||
-  (typeof event.target === 'string' && event.target === player.level) ||
-  (Array.isArray(event.target) &&
-    (event.target.includes(player.level) || event.target.includes(player.strategy)));
-
 const stepEvents = (state, params, log) => {
   let activeEvents = state.activeEvents.filter((event) => state.turn - event.startTurn < event.duration);
   let products = state.products;

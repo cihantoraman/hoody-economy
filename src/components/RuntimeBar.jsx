@@ -9,11 +9,11 @@ import { ICON } from './ui/icons';
 
 const SPEEDS = [0.5, 1, 2, 5, 10];
 
-const RuntimeBar = ({ active, turnCount, speed, onTogglePause, onStep, onRestart, onSpeed }) => {
+const RuntimeBar = ({ active, turnCount, speed, onTogglePause, onStep, onSpeed }) => {
   const stepSize = Math.max(1, Math.round(speed));
 
   return (
-    <Card data-tour="controls" className="p-3 mb-4 flex flex-wrap items-center gap-2">
+    <Card data-tour="controls" className="p-3 mb-4 flex flex-wrap items-center gap-2 sticky top-2 z-30">
       <button
         onClick={onTogglePause}
         className={`h-9 px-4 rounded-md font-semibold text-sm flex items-center gap-1.5 ${
@@ -53,15 +53,6 @@ const RuntimeBar = ({ active, turnCount, speed, onTogglePause, onStep, onRestart
           </button>
         ))}
       </div>
-
-      <button
-        onClick={onRestart}
-        title="Back to setup"
-        className="h-9 px-3 rounded-md font-semibold text-sm flex items-center gap-1.5 border border-line text-muted hover:text-fg"
-      >
-        <Icon path={ICON.restart} className="w-4 h-4" />
-        Restart
-      </button>
     </Card>
   );
 };

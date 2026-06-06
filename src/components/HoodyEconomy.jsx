@@ -85,7 +85,7 @@ const HoodyEconomy = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto bg-bg text-fg min-h-screen">
-      <Header theme={theme} onToggleTheme={toggleTheme} />
+      <Header theme={theme} onToggleTheme={toggleTheme} started={economy.started} onRestart={economy.restart} />
 
       {!economy.started && (
         <SetupPanel
@@ -114,7 +114,6 @@ const HoodyEconomy = () => {
           speed={economy.parameters.speedMultiplier}
           onTogglePause={economy.togglePause}
           onStep={economy.step}
-          onRestart={economy.restart}
           onSpeed={economy.setSpeed}
         />
       )}

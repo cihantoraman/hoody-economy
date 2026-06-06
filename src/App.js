@@ -1,13 +1,15 @@
-import React from 'react';
-import './App.css';
-import GamifiedEconomy from './components/GamifiedEconomy';
+/**
+ * Hoody Economy: gamified cyclical-capital economy simulation
+ * Copyright (c) 2026 Cihan Toraman
+ */
 
-function App() {
-    return (
-        <div className="App">
-            <GamifiedEconomy />
-        </div>
-    );
-}
+import './App.css';
+import HoodyEconomy from './components/HoodyEconomy';
+
+const App = () => (
+  <div className="App">
+    <HoodyEconomy />
+  </div>
+);
 
 export default App;

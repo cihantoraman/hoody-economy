@@ -3,23 +3,23 @@
  * Copyright (c) 2026 Cihan Toraman
  */
 
-// Ordered ramp, yellow-green (Poor) -> purple (Elite), so the six classes read apart in charts.
+// Ordered ramp from red (Poor) through blue to purple (Elite), equal hue steps.
 const TIER_LIGHT = {
-  Poor: '#65a30d',
-  'Lower Middle': '#d97706',
-  Middle: '#ea580c',
-  'Upper Middle': '#dc2626',
-  Rich: '#db2777',
-  Elite: '#9333ea',
+  Poor: '#c32222',
+  'Lower Middle': '#c3b822',
+  Middle: '#38c322',
+  'Upper Middle': '#22c3a3',
+  Rich: '#224dc3',
+  Elite: '#8e22c3',
 };
 
 const TIER_DARK = {
-  Poor: '#a3e635',
-  'Lower Middle': '#fbbf24',
-  Middle: '#fb923c',
-  'Upper Middle': '#f87171',
-  Rich: '#f472b6',
-  Elite: '#c084fc',
+  Poor: '#e05252',
+  'Lower Middle': '#e0d752',
+  Middle: '#65e052',
+  'Upper Middle': '#52e0c4',
+  Rich: '#5278e0',
+  Elite: '#b152e0',
 };
 
 // Vivid, well-separated colors for the multi-series price chart.

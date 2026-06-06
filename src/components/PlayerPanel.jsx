@@ -4,14 +4,18 @@
  */
 
 import CapitalChart from './charts/CapitalChart';
+import AnimatedNumber from './ui/AnimatedNumber';
 import CoinIcon from './ui/CoinIcon';
 import Icon from './ui/Icon';
+import Trend from './ui/Trend';
 import { ICON } from './ui/icons';
 import { statusChipClass, tierTextClass } from '../theme/classes';
 
-const Stat = ({ label, children }) => (
+const Stat = ({ label, hint, children }) => (
   <div>
-    <p className="text-muted text-sm mb-1">{label}</p>
+    <p className="text-muted text-sm mb-1" title={hint}>
+      {label}
+    </p>
     {children}
   </div>
 );
@@ -19,8 +23,11 @@ const Stat = ({ label, children }) => (
 const PlayerPanel = ({ player, strategies, onStrategy, showHistory, onToggleHistory, chart }) => {
   if (!player) return null;
 
+  const history = player.capitalHistory ?? [];
+  const capitalDelta = history.length >= 2 ? history[history.length - 1] - history[history.length - 2] : 0;
+
   return (
-    <section className="bg-surface rounded-xl border border-accent shadow-card p-4 md:p-5 mb-4">
+    <section data-tour="player" className="bg-surface rounded-xl border border-accent shadow-card p-4 md:p-5 mb-4">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
         <div>
           <h2 className="font-semibold text-lg">Your Player</h2>
@@ -30,13 +37,14 @@ const PlayerPanel = ({ player, strategies, onStrategy, showHistory, onToggleHist
           {player.specialStatus && <span className={statusChipClass(player.specialStatus)}>{player.specialStatus}</span>}
           <span className={`${tierTextClass(player.level)} text-lg inline-flex items-center gap-1`}>
             {player.level}: <CoinIcon className="w-4 h-4" />
-            {player.capital.toLocaleString()}
+            <AnimatedNumber value={player.capital} />
+            <Trend value={capitalDelta} className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <Stat label="Strategy">
+        <Stat label="Strategy" hint="How aggressively this player trades and takes risks each turn.">
           <select
             value={player.strategy}
             onChange={(event) => onStrategy(player.id, event.target.value)}
@@ -49,10 +57,13 @@ const PlayerPanel = ({ player, strategies, onStrategy, showHistory, onToggleHist
             ))}
           </select>
         </Stat>
-        <Stat label="Inventory Value">
-          <p className="font-semibold h-9 flex items-center">{player.inventoryValue.toLocaleString()}</p>
+        <Stat label="Inventory Value" hint="Market value of the goods this player is currently holding.">
+          <p className="font-semibold h-9 flex items-center">
+            <AnimatedNumber value={player.inventoryValue} />
+          </p>
         </Stat>
-        <Stat label="Robin Hood Effect">
+        <Stat label="Robin Hood Effect" hint="Net units this player has gained from (or paid into) wealth redistribution.">
+
           <p
             className={`font-semibold h-9 flex items-center ${
               player.robinHoodPoints > 0 ? 'text-accent' : player.robinHoodPoints < 0 ? 'text-danger' : ''
@@ -62,10 +73,11 @@ const PlayerPanel = ({ player, strategies, onStrategy, showHistory, onToggleHist
             {player.robinHoodPoints.toLocaleString()}
           </p>
         </Stat>
-        <Stat label="Cycle">
+        <Stat label="Cycle" hint="How many turns this player has been active.">
           <p className="font-semibold h-9 flex items-center">{player.cycle}</p>
         </Stat>
-        <Stat label="Capital graph">
+        <Stat label="Capital graph" hint="Show this player's capital over time.">
+
           <button
             onClick={onToggleHistory}
             className="h-9 w-full px-3 bg-surface-2 text-fg border border-line rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 hover:border-accent"

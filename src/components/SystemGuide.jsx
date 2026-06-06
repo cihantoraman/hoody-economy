@@ -43,7 +43,7 @@ const SystemGuide = ({ parameters }) => (
           {TIERS.map((tier) => (
             <li key={tier.name}>
               <span className={`font-semibold ${tierTextClass(tier.name)}`}>{tier.name}:</span>{' '}
-              <span className="text-muted">capital ≥ {tier.min.toLocaleString()}</span>
+              <span className="text-muted">{tier.mult > 0 ? `≥ ${tier.mult}× the average` : 'below average'}</span>
             </li>
           ))}
         </ul>

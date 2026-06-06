@@ -15,14 +15,16 @@ export const STRATEGIES = [
 
 export const PRODUCT_CATEGORIES = ['Basic', 'Luxury', 'Technology', 'Service', 'Utility'];
 
-// Wealth tiers, richest first, with the minimum capital needed to reach each.
+// Wealth tiers, richest first, as multiples of the average capital. Classes are
+// relative to the live economy, not fixed amounts, so they scale with any
+// population or money supply and never collapse to a single class.
 export const TIERS = [
-  { name: 'Elite', min: 3000 },
-  { name: 'Rich', min: 2000 },
-  { name: 'Upper Middle', min: 1200 },
-  { name: 'Middle', min: 800 },
-  { name: 'Lower Middle', min: 400 },
-  { name: 'Poor', min: 0 },
+  { name: 'Elite', mult: 2.5 },
+  { name: 'Rich', mult: 1.75 },
+  { name: 'Upper Middle', mult: 1.25 },
+  { name: 'Middle', mult: 0.8 },
+  { name: 'Lower Middle', mult: 0.45 },
+  { name: 'Poor', mult: 0 },
 ];
 
 export const DEFAULT_PARAMETERS = {
@@ -48,7 +50,7 @@ export const DEFAULT_PARAMETERS = {
   marketVolatility: 0.5,
   showDetailedStats: false,
   autoEvents: true,
-  eventChance: 0.3,
+  eventChance: 0.12,
   playerCount: 100,
 };
 

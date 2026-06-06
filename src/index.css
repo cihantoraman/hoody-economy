@@ -26,13 +26,15 @@
   --warn: #a9761b;
   --warn-weak: #f4ecda;
 
-  /* Wealth tiers: ordered ramp, yellow-green (Poor) to purple (Elite). */
-  --tier-poor: #65a30d;
-  --tier-lower: #d97706;
-  --tier-middle: #ea580c;
-  --tier-upper: #dc2626;
-  --tier-rich: #db2777;
-  --tier-elite: #9333ea;
+  --info: #2563eb;
+
+  /* Wealth tiers: red (Poor) through blue to purple (Elite), equal hue steps. */
+  --tier-poor: #c32222;
+  --tier-lower: #c3b822;
+  --tier-middle: #38c322;
+  --tier-upper: #22c3a3;
+  --tier-rich: #224dc3;
+  --tier-elite: #8e22c3;
 }
 
 .dark {
@@ -54,13 +56,15 @@
   --warn: #d6a341;
   --warn-weak: #322712;
 
-  /* Wealth tiers: ordered ramp, yellow-green (Poor) to purple (Elite). */
-  --tier-poor: #a3e635;
-  --tier-lower: #fbbf24;
-  --tier-middle: #fb923c;
-  --tier-upper: #f87171;
-  --tier-rich: #f472b6;
-  --tier-elite: #c084fc;
+  --info: #60a5fa;
+
+  /* Wealth tiers: red (Poor) through blue to purple (Elite), equal hue steps. */
+  --tier-poor: #e05252;
+  --tier-lower: #e0d752;
+  --tier-middle: #65e052;
+  --tier-upper: #52e0c4;
+  --tier-rich: #5278e0;
+  --tier-elite: #b152e0;
 }
 
 /* Make bare borders (border, border-b ...) use the themed line color. */
@@ -115,6 +119,43 @@ select option {
 }
 button:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Staggered reveal for the dashboard when the simulation starts. */
+@keyframes hoody-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.reveal {
+  animation: hoody-reveal 0.5s ease both;
+}
+
+/* Tutorial card entrance. */
+@keyframes hoody-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tutorial-pop {
+  animation: hoody-pop 0.35s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .tutorial-pop {
+    animation: none;
+  }
 }
 
 /* Thin, themed scrollbars for the inner scroll panels. */

@@ -42,6 +42,8 @@ const SetupPanel = ({
   onToggleBailout,
   onToggleEvents,
   onVolatility,
+  onResetTutorial,
+  tutorialSeen,
 }) => (
   <Card className="p-4 mb-4">
     <div className="flex items-center justify-between mb-3">
@@ -54,7 +56,7 @@ const SetupPanel = ({
           <input
             type="number"
             min="1"
-            max="500"
+            max="1000"
             value={parameters.playerCount}
             onChange={(event) => onPlayerCount(event.target.value)}
             className={`w-full ${INPUT}`}
@@ -128,6 +130,15 @@ const SetupPanel = ({
           <span className="text-sm font-semibold w-8 text-right">{parameters.marketVolatility}</span>
         </div>
       </Field>
+    </div>
+    <div className="flex justify-end mt-3 pt-3 border-t border-line">
+      <button
+        onClick={onResetTutorial}
+        disabled={!tutorialSeen}
+        className="text-xs font-semibold text-muted hover:text-fg disabled:opacity-50 disabled:hover:text-muted"
+      >
+        {tutorialSeen ? 'Reset tutorial' : 'Tutorial shows on first Start'}
+      </button>
     </div>
   </Card>
 );

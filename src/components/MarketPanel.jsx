@@ -5,6 +5,7 @@
 
 import Card from './ui/Card';
 import Icon from './ui/Icon';
+import Trend from './ui/Trend';
 import { ICON } from './ui/icons';
 
 const Meter = ({ label, value }) => (
@@ -36,7 +37,10 @@ const MarketPanel = ({ products, canEdit, onRemove }) => (
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className={`font-semibold tabular-nums ${priceColor(product)}`}>{product.price}</span>
+              <span className={`font-semibold tabular-nums inline-flex items-center gap-0.5 ${priceColor(product)}`}>
+                {product.price}
+                <Trend value={product.lastChange} />
+              </span>
               {canEdit && (
                 <button onClick={() => onRemove(product.id)} title="Remove product" className="text-muted hover:text-danger">
                   <Icon path={ICON.close} className="w-3.5 h-3.5" />

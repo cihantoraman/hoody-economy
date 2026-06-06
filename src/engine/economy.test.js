@@ -43,6 +43,17 @@ test('history and capitalHistory stay bounded on long runs', () => {
   state.players.forEach((player) => expect(player.capitalHistory.length).toBeLessThanOrEqual(200));
 });
 
+test('the class distribution never collapses to a single class over 1000 turns', () => {
+  let state = seedState(100);
+  for (let i = 0; i < 1000; i += 1) state = simulateTurn(state, DEFAULT_PARAMETERS);
+  const counts = {};
+  state.players.forEach((player) => {
+    counts[player.level] = (counts[player.level] ?? 0) + 1;
+  });
+  expect(counts.Poor ?? 0).toBeLessThan(state.players.length);
+  expect(Object.keys(counts).length).toBeGreaterThanOrEqual(2);
+});
+
 test('a turn advances state immutably and keeps the population', () => {
   const before = seedState(10);
   const after = simulateTurn(before, DEFAULT_PARAMETERS);

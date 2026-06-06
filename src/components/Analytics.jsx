@@ -39,7 +39,7 @@ const Analytics = ({
   const pieData = TIER_NAMES.map((name) => ({ name, value: counts[name], color: tiers[name] }));
 
   return (
-    <div className="mb-4">
+    <div className="mb-4" data-tour="analytics">
       <div className="flex items-center gap-3 mb-3">
         <h2 className="font-semibold text-lg">Analytics</h2>
         <button

@@ -24,15 +24,16 @@ const randInt = (max) => Math.floor(Math.random() * max);
 const pick = (list) => list[randInt(list.length)];
 const cap = (list) => (list.length > HISTORY_LIMIT ? list.slice(list.length - HISTORY_LIMIT) : list);
 const isFrozen = (player) => player.penaltyTime > 0 || player.specialStatus === 'Imprisoned';
+const meanCapital = (players) => (players.length ? players.reduce((sum, p) => sum + p.capital, 0) / players.length : 1);
 
 const STRATEGY_SPREAD = {
-  Speculative: 1.2,
-  Aggressive: 1.0,
-  Risky: 0.8,
-  Innovative: 0.6,
-  Technological: 0.5,
-  Balanced: 0.35,
-  Conservative: 0.2,
+  Speculative: 0.55,
+  Aggressive: 0.45,
+  Risky: 0.36,
+  Innovative: 0.28,
+  Technological: 0.22,
+  Balanced: 0.16,
+  Conservative: 0.1,
 };
 
 const TRADE_PROBABILITY = {
@@ -81,14 +82,14 @@ const countByLevel = (players) => ({
 
 const createPlayers = (count, products) => {
   const playerSlot = Math.max(1, Math.ceil(count / 2));
-  return Array.from({ length: count }, (_, index) => {
+  const base = Array.from({ length: count }, (_, index) => {
     const id = index + 1;
     const capital = seedCapital(id, count);
     return {
       id,
       name: id === playerSlot ? 'Player' : `Player ${id}`,
       capital,
-      level: levelFor(capital),
+      level: 'Middle',
       cycle: 1,
       strategy: STRATEGIES[randInt(STRATEGIES.length)],
       inventory: products.map((product) => ({ productId: product.id, quantity: randInt(5) })),
@@ -102,6 +103,8 @@ const createPlayers = (count, products) => {
       capitalHistory: [capital],
     };
   });
+  const mean = meanCapital(base);
+  return base.map((player) => ({ ...player, level: levelFor(player.capital, mean) }));
 };
 
 export const seedState = (playerCount) => {
@@ -190,7 +193,7 @@ const stepPrices = (products, historical, params, turn, log) => {
     if (Math.abs(price - product.price) / product.price > 0.1) {
       log(`${product.name} price ${price > product.price ? 'increased' : 'decreased'} from ${product.price} to ${price}`, 'market');
     }
-    return { ...product, price, demand, supply };
+    return { ...product, price, demand, supply, lastChange: price - product.price };
   });
 
   let nextHistorical = historical;
@@ -361,29 +364,33 @@ const stepTrades = (players, products, activeEvents, log) => {
   return { players: next, products: nextProducts, treasuryDelta };
 };
 
-// Cyclical-capital core: every active player drops a slice of capital into a
-// shared pot, then the pot is paid back weighted by luck, strategy, the
-// anti-accumulation bias, events and (undetected) manipulation. Sum of the
-// slices equals the sum paid out, so player capital is reshuffled, not changed.
-const stepTransform = (players, params, activeEvents, bonus) => {
+// Cyclical-capital core. Every active player drops a small slice of capital into
+// a shared pot together with the whole treasury (fines, taxes, trade flow). The
+// pot is paid back weighted by luck, the anti-accumulation bias, events and
+// (undetected) manipulation. Recycling the treasury every turn keeps cash
+// circulating instead of draining away, and the money supply stays exact.
+const stepTransform = (players, params, activeEvents, bonus, treasury, povertyRelief) => {
   const active = players.filter((player) => !isFrozen(player));
-  if (!active.length) return { players, treasuryDelta: 0 };
+  if (!active.length) return { players, treasury };
 
-  const rate = params.transformationRate * 0.5;
+  const rate = params.transformationRate * 0.35;
   const contribution = new Map();
-  let pot = 0;
+  let contributed = 0;
   active.forEach((player) => {
     const slice = Math.round(player.capital * rate);
     contribution.set(player.id, slice);
-    pot += slice;
+    contributed += slice;
   });
+
+  const pot = Math.max(0, contributed + treasury);
 
   const weight = new Map();
   let weightSum = 0;
   active.forEach((player) => {
-    const spread = STRATEGY_SPREAD[player.strategy] ?? 0.35;
+    const spread = STRATEGY_SPREAD[player.strategy] ?? 0.16;
     const luck = 1 + (Math.random() - 0.5) * spread;
-    const balance = 1 + params.balancingFactor * (BALANCE_MULTIPLIER[player.level] ?? 0);
+    let balance = 1 + params.balancingFactor * (BALANCE_MULTIPLIER[player.level] ?? 0);
+    if (povertyRelief && (player.level === 'Poor' || player.level === 'Lower Middle')) balance *= 1.6;
     const experience = 1 + Math.min(player.cycle / 10000, 0.05);
 
     let eventFactor = 1;
@@ -413,14 +420,14 @@ const stepTransform = (players, params, activeEvents, bonus) => {
     return { ...player, capital: player.capital - contribution.get(player.id) + payout.get(player.id) };
   });
 
-  // Any rounding difference between pot and paid is parked in the treasury,
-  // which keeps the money supply exact and never pushes a player negative.
-  return { players: next, treasuryDelta: pot - paid };
+  // Conservation: the treasury keeps whatever the pot did not pay out.
+  return { players: next, treasury: contributed + treasury - paid };
 };
 
-const finalizePlayers = (players, products, log) =>
-  players.map((player) => {
-    const level = levelFor(player.capital);
+const finalizePlayers = (players, products, log) => {
+  const mean = meanCapital(players);
+  return players.map((player) => {
+    const level = levelFor(player.capital, mean);
     if (level !== player.level && (player.name === 'Player' || Math.random() > 0.9)) {
       log(`${player.name} has ${isHigherLevel(level, player.level) ? 'risen' : 'fallen'} to ${level} level!`, 'status');
     }
@@ -432,6 +439,7 @@ const finalizePlayers = (players, products, log) =>
       capitalHistory: cap([...player.capitalHistory, player.capital]),
     };
   });
+};
 
 const stepRobinHood = (players, params, log) => {
   const taxable = (level) => players.filter((p) => p.level === level && !isFrozen(p));
@@ -475,35 +483,6 @@ const stepRobinHood = (players, params, log) => {
   return { players: next, treasuryDelta: pool - paid };
 };
 
-const stepBailout = (players, treasury, params, log) => {
-  const poor = players.filter((p) => p.level === 'Poor');
-  if (poor.length / players.length < params.bailoutThreshold / 100) {
-    return { players, treasury, spent: 0 };
-  }
-
-  let remaining = treasury;
-  let spent = 0;
-  const grants = new Map();
-  poor.forEach((player) => {
-    if (remaining <= 0) return;
-    const need = Math.floor(Math.max(params.middleLimit - player.capital, 0) / 2);
-    const grant = Math.min(need, remaining);
-    if (grant > 0) {
-      grants.set(player.id, grant);
-      remaining -= grant;
-      spent += grant;
-    }
-  });
-
-  if (!spent) return { players, treasury, spent: 0 };
-
-  const next = players.map((player) =>
-    grants.has(player.id) ? { ...player, capital: player.capital + grants.get(player.id) } : player,
-  );
-  log(`System bailout: ${spent} units paid from the treasury to ${grants.size} players in poverty.`, 'system');
-  return { players: next, treasury: treasury - spent, spent };
-};
-
 const recordHistory = (historical, players, turn) => ({
   ...historical,
   giniCoefficient: cap([...historical.giniCoefficient, { turn, value: giniCoefficient(players) }]),
@@ -537,9 +516,11 @@ export const simulateTurn = (state, params) => {
   products = trades.products;
   treasury += trades.treasuryDelta;
 
-  const transform = stepTransform(players, params, activeEvents, manipulation.bonus);
+  const povertyShare = players.filter((p) => p.level === 'Poor').length / players.length;
+  const povertyRelief = params.autoBailout && povertyShare >= params.bailoutThreshold / 100;
+  const transform = stepTransform(players, params, activeEvents, manipulation.bonus, treasury, povertyRelief);
   players = transform.players;
-  treasury += transform.treasuryDelta;
+  treasury = transform.treasury;
 
   players = finalizePlayers(players, products, log);
 
@@ -547,12 +528,6 @@ export const simulateTurn = (state, params) => {
     const robinHood = stepRobinHood(players, params, log);
     players = robinHood.players;
     treasury += robinHood.treasuryDelta;
-  }
-
-  if (turn % 10 === 0 && params.autoBailout) {
-    const bailout = stepBailout(players, treasury, params, log);
-    players = bailout.players;
-    treasury = bailout.treasury;
   }
 
   if (turn % 5 === 0) historical = recordHistory(historical, players, turn);

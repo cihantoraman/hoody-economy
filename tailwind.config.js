@@ -19,6 +19,7 @@ module.exports = {
         fg: 'var(--fg)',
         muted: 'var(--muted)',
         line: 'var(--line)',
+        info: 'var(--info)',
         // Single brand accent: swap the --accent vars to re-theme the whole app.
         accent: {
           DEFAULT: 'var(--accent)',

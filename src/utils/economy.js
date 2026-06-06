@@ -7,8 +7,11 @@ import { TIERS } from '../constants/economy';
 
 const TIER_ORDER = [...TIERS].map((tier) => tier.name).reverse(); // Poor -> Elite
 
-export const levelFor = (capital) =>
-  (TIERS.find((tier) => capital >= tier.min) ?? TIERS[TIERS.length - 1]).name;
+// Class is relative to the average capital, so it tracks the live distribution.
+export const levelFor = (capital, mean) => {
+  const reference = mean > 0 ? mean : 1;
+  return (TIERS.find((tier) => capital >= tier.mult * reference) ?? TIERS[TIERS.length - 1]).name;
+};
 
 export const isHigherLevel = (a, b) => TIER_ORDER.indexOf(a) > TIER_ORDER.indexOf(b);
 

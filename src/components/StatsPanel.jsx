@@ -3,6 +3,7 @@
  * Copyright (c) 2026 Cihan Toraman
  */
 
+import AnimatedNumber from './ui/AnimatedNumber';
 import Card from './ui/Card';
 import CoinIcon from './ui/CoinIcon';
 import { TIERS } from '../constants/economy';
@@ -19,19 +20,25 @@ const StatsPanel = ({ stats, tiers, treasury }) => {
   const population = TIER_NAMES.reduce((sum, name) => sum + stats.counts[name], 0) || 1;
 
   return (
-    <Card className="p-4">
+    <Card className="p-4" data-tour="society">
       <h2 className="font-semibold text-lg mb-3">Society</h2>
 
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-muted text-sm">Total capital</span>
+        <span className="text-muted text-sm" title="Cash currently held by all players. It shifts as money moves to and from the treasury.">
+          Total capital
+        </span>
         <span className="font-semibold text-lg tabular-nums inline-flex items-center gap-1">
           <CoinIcon className="w-4 h-4 text-muted" />
-          {Math.round(stats.totalCapital).toLocaleString()}
+          <AnimatedNumber value={Math.round(stats.totalCapital)} />
         </span>
       </div>
       <div className="flex justify-between text-xs text-muted mb-4">
-        <span>Treasury {Math.round(treasury).toLocaleString()}</span>
-        <span>Fixed supply {Math.round(stats.totalCapital + treasury).toLocaleString()}</span>
+        <span title="The market and redistribution buffer. It is recycled back to players every turn, so it stays small.">
+          Treasury {Math.round(treasury).toLocaleString()}
+        </span>
+        <span title="Total money in the system (capital + treasury). This never changes.">
+          Fixed supply {Math.round(stats.totalCapital + treasury).toLocaleString()}
+        </span>
       </div>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Classes</p>

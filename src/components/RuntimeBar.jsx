@@ -28,7 +28,7 @@ const RuntimeBar = ({
   onRestart,
   onSpeed,
 }) => (
-  <Card className="p-3 mb-4 flex flex-col lg:flex-row lg:items-center gap-3">
+  <Card data-tour="controls" className="p-3 mb-4 flex flex-col lg:flex-row lg:items-center gap-3">
     <div className="flex items-center gap-2 flex-wrap">
       <span
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${

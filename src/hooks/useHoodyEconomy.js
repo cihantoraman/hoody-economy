@@ -37,11 +37,13 @@ export const useHoodyEconomy = () => {
     return () => clearInterval(interval);
   }, [params.active, params.cycleTime, params.speedMultiplier]);
 
-  const start = () => {
+  const start = (run = true) => {
     setStarted(true);
-    setParams((previous) => ({ ...previous, active: true }));
-    pushMessage('Simulation started. The economy is now running.');
+    setParams((previous) => ({ ...previous, active: run }));
+    pushMessage(run ? 'Simulation started. The economy is now running.' : 'Setup complete. Read the tutorial, then resume.');
   };
+
+  const resume = () => setParams((previous) => ({ ...previous, active: true }));
 
   const restart = () => {
     setState(seedState(paramsRef.current.playerCount));
@@ -64,7 +66,7 @@ export const useHoodyEconomy = () => {
 
   const setPlayerCount = (value) => {
     const parsed = Number.parseInt(value, 10);
-    const playerCount = Number.isNaN(parsed) ? 1 : Math.min(Math.max(parsed, 1), 500);
+    const playerCount = Number.isNaN(parsed) ? 1 : Math.min(Math.max(parsed, 1), 1000);
     setParams((previous) => ({ ...previous, playerCount }));
   };
 
@@ -141,6 +143,7 @@ export const useHoodyEconomy = () => {
     setPlayerCount,
     applyPopulation,
     start,
+    resume,
     restart,
     togglePause,
     step,

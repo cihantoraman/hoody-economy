@@ -59,8 +59,10 @@ const SystemGuide = ({ parameters, open, onToggle }) => (
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Justice</h3>
             <p className="text-muted">
-              Cheaters are warned, watchlisted after {parameters.manipulationThreshold} flags, then jailed with heavy
-              fines on repeat ({parameters.imprisonmentThreshold}+).
+              Risk-taking strategies sometimes try to rig the market. Each time one is caught it earns a flag; at{' '}
+              {parameters.manipulationThreshold} flags the player is fined and watchlisted, and a repeat offender with{' '}
+              {parameters.imprisonmentThreshold}+ convictions is imprisoned for {parameters.imprisonmentDuration} weeks
+              with a heavy fine.
             </p>
           </div>
           <div>
@@ -72,6 +74,13 @@ const SystemGuide = ({ parameters, open, onToggle }) => (
             <p className="text-muted">If more than {parameters.bailoutThreshold}% fall into poverty, emergency support kicks in.</p>
           </div>
         </div>
+
+        <p className="text-xs text-muted mt-4 pt-4 border-t border-line">
+          Model: wealth moves through a kinetic exchange (Chakraborti and Chakrabarti, 2000), where paired agents keep a
+          saving fraction set by their strategy and randomly split the rest. This yields the realistic heavy-tailed
+          (Pareto) wealth distribution seen in real economies. Inequality is tracked with the Gini coefficient and
+          tempered by a progressive tax and flat transfer. Money is conserved every week.
+        </p>
       </div>
     )}
   </div>

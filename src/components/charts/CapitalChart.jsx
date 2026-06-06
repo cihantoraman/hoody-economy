@@ -22,13 +22,7 @@ const CapitalChart = ({ history, chart, height = 'h-36', refLines }) => {
           <YAxis tick={{ fill: chart.axis, fontSize: 12 }} stroke={chart.grid} />
           <Tooltip {...chart.tooltip} />
           {refLines?.map((ref) => (
-            <ReferenceLine
-              key={ref.label}
-              y={ref.value}
-              stroke={ref.color}
-              strokeDasharray="4 4"
-              label={{ value: `${ref.label} ${ref.value.toLocaleString()}`, position: 'right', fill: ref.color, fontSize: 11 }}
-            />
+            <ReferenceLine key={ref.label} y={ref.value} stroke={ref.color} strokeDasharray="4 4" strokeWidth={1.5} />
           ))}
           <Line type="monotone" dataKey="capital" stroke={chart.accent} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>

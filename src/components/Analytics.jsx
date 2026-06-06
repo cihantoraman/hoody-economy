@@ -117,7 +117,7 @@ const Analytics = ({
                 onChange={(event) => onSelectPlayer(event.target.value ? Number(event.target.value) : null)}
                 className="mb-3 h-9 px-2 rounded-md border border-line bg-surface text-sm outline-none focus:border-accent"
               >
-                <option value="">Select a player…</option>
+                <option value="">Select a player...</option>
                 {players.map((player) => (
                   <option key={player.id} value={player.id}>
                     {player.name === 'Player' ? 'You (Player)' : player.name} ({player.level})
@@ -130,9 +130,18 @@ const Analytics = ({
                 height="h-64"
                 refLines={selectedPlayer ? wealthRefs : undefined}
               />
-              <p className="text-xs text-muted mt-2">
-                Dashed lines mark the current Richest, Average and Poorest capital, so you can see where this player sits.
-              </p>
+              {selectedPlayer && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                  <span className="text-xs text-muted">Dashed lines:</span>
+                  {wealthRefs.map((ref) => (
+                    <span key={ref.label} className="inline-flex items-center gap-1.5 text-xs text-muted">
+                      <span className="inline-block w-4 h-0.5 rounded" style={{ background: ref.color }} />
+                      {ref.label}
+                      <span className="font-semibold text-fg tabular-nums">{ref.value.toLocaleString()}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

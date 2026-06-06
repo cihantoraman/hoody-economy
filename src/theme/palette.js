@@ -3,8 +3,8 @@
  * Copyright (c) 2026 Cihan Toraman
  */
 
-// Same-lightness, same-saturation ramp. Hue sweeps warm (Poor) to cool (Elite),
-// so stacked classes read as one harmonious family instead of a clown rainbow.
+// Even-lightness ramp, hue sweeping warm (Poor) to cool (Elite), so stacked
+// bars read as one coherent palette rather than a harsh rainbow.
 const TIER_LIGHT = {
   Poor: '#d4756b',
   'Lower Middle': '#d49d5a',

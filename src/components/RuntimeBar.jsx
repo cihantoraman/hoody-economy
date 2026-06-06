@@ -38,7 +38,7 @@ const RuntimeBar = ({
         <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-accent' : 'bg-muted'}`} />
         {started ? (active ? 'Running' : 'Paused') : 'Setup'}
       </span>
-      <Chip label="Turn" value={turnCount} />
+      <Chip label="Week" value={turnCount} />
       <Chip label="Gini" value={gini} />
       <Chip label="Avg" value={avgCapital.toLocaleString()} />
     </div>
@@ -49,8 +49,8 @@ const RuntimeBar = ({
           onClick={onStart}
           className="h-9 px-5 rounded-md font-semibold text-sm flex items-center gap-1.5 bg-accent text-accent-fg"
         >
-          <Icon path={ICON.play} className="w-4 h-4" />
-          Start
+          <Icon path={ICON.check} className="w-4 h-4" />
+          Ready
         </button>
       ) : (
         <>
@@ -61,16 +61,16 @@ const RuntimeBar = ({
             }`}
           >
             <Icon path={active ? ICON.stop : ICON.play} className="w-4 h-4" />
-            {active ? 'Pause' : 'Resume'}
+            {active ? 'Pause' : 'Play'}
           </button>
           <button
             onClick={onStep}
             disabled={active}
-            title="Run one turn"
+            title="Advance one week"
             className="h-9 px-4 rounded-md font-semibold text-sm flex items-center gap-1.5 bg-surface-2 text-fg border border-line disabled:opacity-40"
           >
             <Icon path={ICON.step} className="w-4 h-4" />
-            Turn
+            Step
           </button>
           <div className="flex items-center gap-1 pl-1">
             <span className="text-xs text-muted mr-1">Speed</span>

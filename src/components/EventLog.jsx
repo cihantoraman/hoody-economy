@@ -50,7 +50,7 @@ const EventCard = ({ event, turnCount }) => {
         </div>
         <p className="text-sm text-muted mt-1">{event.description}</p>
         <p className="text-xs text-muted mt-2">
-          {turnsLeft} turn{turnsLeft === 1 ? '' : 's'} left
+          {turnsLeft} week{turnsLeft === 1 ? '' : 's'} left
         </p>
       </div>
     </div>

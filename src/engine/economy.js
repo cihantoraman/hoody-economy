@@ -208,7 +208,7 @@ const stepManipulation = (players, params, turn, log) => {
   const bonus = new Map();
 
   let next = players;
-  if (turn % 2 === 0) {
+  if (turn % 3 === 0) {
     next = players.map((player) => {
       if (isFrozen(player)) return player;
 
@@ -217,9 +217,9 @@ const stepManipulation = (players, params, turn, log) => {
         player.capitalHistory[player.capitalHistory.length - 1] <
           player.capitalHistory[player.capitalHistory.length - 3];
       const baseChance =
-        player.strategy === 'Aggressive' ? 0.15
-          : player.strategy === 'Speculative' ? 0.12
-            : player.strategy === 'Risky' ? 0.08 : 0.03;
+        player.strategy === 'Aggressive' ? 0.05
+          : player.strategy === 'Speculative' ? 0.04
+            : player.strategy === 'Risky' ? 0.025 : 0.008;
       const desperation = losingMoney ? 0.1 : 0;
       const watchlistModifier = player.specialStatus === 'Watchlist' ? -0.05 : 0;
       if (Math.random() >= baseChance + desperation + watchlistModifier) return player;
@@ -247,7 +247,7 @@ const stepManipulation = (players, params, turn, log) => {
       if (player.imprisonmentRecord >= params.imprisonmentThreshold) {
         const fine = Math.round(player.capital * 0.3);
         fines += fine;
-        log(`${player.name} is a repeat offender and has been IMPRISONED for ${params.imprisonmentDuration} turns with a 30% capital fine!`, 'warning');
+        log(`${player.name} is a repeat offender and has been IMPRISONED for ${params.imprisonmentDuration} weeks with a 30% capital fine!`, 'warning');
         return {
           ...player,
           capital: player.capital - fine,
@@ -260,7 +260,7 @@ const stepManipulation = (players, params, turn, log) => {
 
       const fine = Math.round(player.capital * 0.2);
       fines += fine;
-      log(`${player.name} caught manipulating! Penalized for ${params.penaltyDuration} turns and added to watchlist.`, 'warning');
+      log(`${player.name} caught manipulating! Penalized for ${params.penaltyDuration} weeks and added to watchlist.`, 'warning');
       return {
         ...player,
         capital: player.capital - fine,
@@ -275,7 +275,7 @@ const stepManipulation = (players, params, turn, log) => {
   next = next.map((player) => {
     if (player.penaltyTime <= 0) return player;
     const penaltyTime = player.penaltyTime - 1;
-    if (penaltyTime === 0 && player.specialStatus === 'Watchlist' && Math.random() > 0.5) {
+    if (penaltyTime === 0 && player.specialStatus === 'Watchlist') {
       return { ...player, penaltyTime, specialStatus: null };
     }
     if (penaltyTime === 0 && player.specialStatus === 'Imprisoned') {
@@ -538,7 +538,7 @@ export const simulateTurn = (state, params) => {
   players = finalized.players;
 
   if (turn % 5 === 0) historical = recordHistory(historical, players, finalized.mobility, turn);
-  if (turn % 100 === 0) log(`Economic milestone: ${turn} turns completed.`, 'system');
+  if (turn % 100 === 0) log(`Economic milestone: ${turn} weeks completed.`, 'system');
 
   const messages = [...pending.reverse(), ...state.messages].slice(0, 20);
 

@@ -10,7 +10,7 @@ import { ICON } from './ui/icons';
 const STEPS = [
   {
     title: 'Welcome to Hoody Economy',
-    body: 'A living economy where wealth keeps circulating and no one stays on top for long. It is paused while you read, and will run as soon as you finish.',
+    body: 'A living economy where wealth keeps circulating and no one stays on top for long. It is paused. Press Play in the bar above whenever you are ready to let the weeks flow.',
     target: null,
   },
   {

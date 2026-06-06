@@ -61,7 +61,6 @@ const HoodyEconomy = () => {
 
   const finishTutorial = () => {
     setShowTutorial(false);
-    economy.resume();
     setTutorialSeen(true);
     try {
       window.localStorage.setItem(TUTORIAL_KEY, 'true');
@@ -90,7 +89,7 @@ const HoodyEconomy = () => {
         gini={stats.gini}
         avgCapital={stats.avgCapital}
         speed={economy.parameters.speedMultiplier}
-        onStart={() => economy.start(tutorialSeen)}
+        onStart={economy.start}
         onTogglePause={economy.togglePause}
         onStep={economy.step}
         onRestart={economy.restart}

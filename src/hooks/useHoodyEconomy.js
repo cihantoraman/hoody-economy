@@ -37,10 +37,10 @@ export const useHoodyEconomy = () => {
     return () => clearInterval(interval);
   }, [params.active, params.cycleTime, params.speedMultiplier]);
 
-  const start = (run = true) => {
+  const start = () => {
     setStarted(true);
-    setParams((previous) => ({ ...previous, active: run }));
-    pushMessage(run ? 'Simulation started. The economy is now running.' : 'Setup complete. Read the tutorial, then resume.');
+    setParams((previous) => ({ ...previous, active: false }));
+    pushMessage('Ready. Press Play to let the weeks flow.');
   };
 
   const resume = () => setParams((previous) => ({ ...previous, active: true }));

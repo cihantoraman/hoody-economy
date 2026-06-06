@@ -129,7 +129,7 @@ const HoodyEconomy = () => {
 
           <Reveal delay={140}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
-              <StatsPanel stats={stats} tiers={tiers} treasury={economy.treasury} />
+              <StatsPanel stats={stats} tiers={tiers} treasury={economy.treasury} mobility={economy.mobility} />
               <EventLog activeEvents={economy.activeEvents} messages={economy.messages} turnCount={economy.turnCount} />
               <MarketPanel products={economy.products} canEdit={!economy.parameters.active} onRemove={economy.removeProduct} />
             </div>

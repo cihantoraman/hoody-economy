@@ -16,7 +16,7 @@ const JUSTICE = [
   { key: 'watchlist', label: 'Watchlist', className: 'text-warn' },
 ];
 
-const StatsPanel = ({ stats, tiers, treasury }) => {
+const StatsPanel = ({ stats, tiers, treasury, mobility }) => {
   const population = TIER_NAMES.reduce((sum, name) => sum + stats.counts[name], 0) || 1;
 
   return (
@@ -32,12 +32,20 @@ const StatsPanel = ({ stats, tiers, treasury }) => {
           <AnimatedNumber value={Math.round(stats.totalCapital)} />
         </span>
       </div>
-      <div className="flex justify-between text-xs text-muted mb-4">
+      <div className="flex justify-between text-xs text-muted mb-1">
         <span title="The market and redistribution buffer. It is recycled back to players every turn, so it stays small.">
           Treasury {Math.round(treasury).toLocaleString()}
         </span>
         <span title="Total money in the system (capital + treasury). This never changes.">
           Fixed supply {Math.round(stats.totalCapital + treasury).toLocaleString()}
+        </span>
+      </div>
+      <div className="flex justify-between text-xs text-muted mb-4">
+        <span title="Share of players who changed class this turn — how fluid the society is.">
+          Mobility {Math.round((mobility ?? 0) * 100)}%
+        </span>
+        <span title="Inequality, from 0 (everyone equal) to 1 (one person owns everything).">
+          Gini {stats.gini}
         </span>
       </div>
 

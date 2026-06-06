@@ -4,6 +4,7 @@
  */
 
 import { DEFAULT_PARAMETERS } from '../constants/economy';
+import { giniCoefficient } from '../utils/economy';
 import { seedState, simulateTurn } from './economy';
 
 const totalMoney = (state) => state.players.reduce((sum, p) => sum + p.capital, 0) + state.treasury;
@@ -43,7 +44,7 @@ test('history and capitalHistory stay bounded on long runs', () => {
   state.players.forEach((player) => expect(player.capitalHistory.length).toBeLessThanOrEqual(200));
 });
 
-test('the class distribution never collapses to a single class over 1000 turns', () => {
+test('the class distribution never collapses and inequality stays realistic over 1000 turns', () => {
   let state = seedState(100);
   for (let i = 0; i < 1000; i += 1) state = simulateTurn(state, DEFAULT_PARAMETERS);
   const counts = {};
@@ -51,7 +52,10 @@ test('the class distribution never collapses to a single class over 1000 turns',
     counts[player.level] = (counts[player.level] ?? 0) + 1;
   });
   expect(counts.Poor ?? 0).toBeLessThan(state.players.length);
-  expect(Object.keys(counts).length).toBeGreaterThanOrEqual(2);
+  expect(Object.keys(counts).length).toBeGreaterThanOrEqual(3);
+  const gini = giniCoefficient(state.players);
+  expect(gini).toBeGreaterThan(0.05);
+  expect(gini).toBeLessThan(0.8);
 });
 
 test('a turn advances state immutably and keeps the population', () => {

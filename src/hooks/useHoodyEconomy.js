@@ -134,6 +134,7 @@ export const useHoodyEconomy = () => {
     activeEvents: state.activeEvents,
     historicalData: state.historical,
     treasury: state.treasury,
+    mobility: state.mobility,
     started,
     newProduct,
     setNewProduct,

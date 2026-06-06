@@ -165,7 +165,7 @@ export const createInitialHistoricalData = () => ({
   classDistribution: [],
   productPrices: {},
   averageCapital: [],
-  manipulationEvents: [],
+  mobility: [],
 });
 
 export const createInitialMessages = (playerCount) => [

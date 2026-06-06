@@ -207,7 +207,7 @@ const stepManipulation = (players, params, turn, log) => {
         player.strategy === 'Aggressive' ? 0.05
           : player.strategy === 'Speculative' ? 0.04
             : player.strategy === 'Risky' ? 0.025 : 0.008;
-      const desperation = losingMoney ? 0.1 : 0;
+      const desperation = losingMoney ? 0.03 : 0;
       const watchlistModifier = player.specialStatus === 'Watchlist' ? -0.05 : 0;
       if (Math.random() >= baseChance + desperation + watchlistModifier) return player;
 
@@ -266,8 +266,8 @@ const stepManipulation = (players, params, turn, log) => {
       return { ...player, penaltyTime, specialStatus: null };
     }
     if (penaltyTime === 0 && player.specialStatus === 'Imprisoned') {
-      log(`${player.name} released from imprisonment but remains on watchlist.`, 'system');
-      return { ...player, penaltyTime, specialStatus: 'Watchlist' };
+      log(`${player.name} released from imprisonment.`, 'system');
+      return { ...player, penaltyTime, specialStatus: null };
     }
     return { ...player, penaltyTime };
   });

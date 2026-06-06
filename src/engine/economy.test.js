@@ -57,9 +57,10 @@ test('the class distribution never collapses and inequality stays realistic over
   expect(gini).toBeGreaterThan(0.05);
   expect(gini).toBeLessThan(0.8);
 
-  // The watchlist should stay a small minority, not swallow everyone.
+  // The watchlist should stay a small minority, not swallow everyone (a past bug
+  // left released prisoners permanently watchlisted, which pinned this near 100%).
   const watchlisted = state.players.filter((p) => p.specialStatus === 'Watchlist').length;
-  expect(watchlisted).toBeLessThan(state.players.length * 0.3);
+  expect(watchlisted).toBeLessThan(state.players.length * 0.15);
 });
 
 test('a turn advances state immutably and keeps the population', () => {

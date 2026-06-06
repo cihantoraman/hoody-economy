@@ -61,7 +61,7 @@ const EventLog = ({ activeEvents, messages, turnCount }) => {
   const [tab, setTab] = useState('events');
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 flex flex-col md:h-full">
       <div className="flex items-center gap-2 mb-3">
         <TabButton active={tab === 'events'} onClick={() => setTab('events')}>
           Active Events
@@ -71,7 +71,7 @@ const EventLog = ({ activeEvents, messages, turnCount }) => {
         </TabButton>
       </div>
 
-      <div className="max-h-72 overflow-y-auto pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
         {tab === 'events' ? (
           activeEvents.length ? (
             <div className="space-y-2">
@@ -80,7 +80,7 @@ const EventLog = ({ activeEvents, messages, turnCount }) => {
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-muted italic">No active market events</div>
+            <div className="h-full flex items-center justify-center text-center text-sm text-muted italic">No active market events</div>
           )
         ) : (
           <div className="space-y-1.5">

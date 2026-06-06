@@ -45,6 +45,7 @@ const HoodyEconomy = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [tutorialSeen, setTutorialSeen] = useState(readTutorialSeen);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(true);
 
   const stats = useMemo(() => summarize(economy.players), [economy.players]);
   const chart = chartTheme(theme);
@@ -58,6 +59,11 @@ const HoodyEconomy = () => {
     const timer = setTimeout(() => setShowTutorial(true), 700);
     return () => clearTimeout(timer);
   }, [economy.started, tutorialSeen]);
+
+  // The "How it works" guide is open during setup and folds away once the game starts.
+  useEffect(() => {
+    setGuideOpen(!economy.started);
+  }, [economy.started]);
 
   const finishTutorial = () => {
     setShowTutorial(false);
@@ -127,7 +133,7 @@ const HoodyEconomy = () => {
           </Reveal>
 
           <Reveal delay={140}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-[29rem] gap-4 mb-4">
               <StatsPanel stats={stats} tiers={tiers} treasury={economy.treasury} mobility={economy.mobility} />
               <EventLog activeEvents={economy.activeEvents} messages={economy.messages} turnCount={economy.turnCount} />
               <MarketPanel products={economy.products} canEdit={!economy.parameters.active} onRemove={economy.removeProduct} />
@@ -155,7 +161,11 @@ const HoodyEconomy = () => {
         </>
       )}
 
-      <SystemGuide parameters={economy.parameters} />
+      <SystemGuide
+        parameters={economy.parameters}
+        open={guideOpen}
+        onToggle={() => setGuideOpen((value) => !value)}
+      />
 
       <footer className="mt-10 pt-6 border-t border-line text-center">
         <p className="text-sm font-semibold">Hoody Economy</p>

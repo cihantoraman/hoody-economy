@@ -9,11 +9,12 @@ import Trend from './ui/Trend';
 import { ICON } from './ui/icons';
 
 const Meter = ({ label, value }) => (
-  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-    <span className="text-[11px] text-muted w-12 shrink-0">{label}</span>
-    <div className="flex-1 h-1 rounded-full bg-line overflow-hidden">
+  <div className="flex items-center gap-2">
+    <span className="text-[11px] text-muted w-14 shrink-0">{label}</span>
+    <div className="flex-1 h-1.5 rounded-full bg-line overflow-hidden">
       <div className="h-full bg-accent rounded-full" style={{ width: `${Math.round(value * 100)}%` }} />
     </div>
+    <span className="text-[11px] text-muted tabular-nums w-7 text-right shrink-0">{Math.round(value * 100)}</span>
   </div>
 );
 
@@ -24,11 +25,11 @@ const priceColor = (product) => {
 };
 
 const MarketPanel = ({ products, canEdit, onRemove }) => (
-  <Card className="p-4">
+  <Card className="p-4 flex flex-col md:h-full">
     <h2 className="font-semibold text-lg mb-3">Market</h2>
-    <div className="max-h-72 overflow-y-auto pr-1 space-y-1">
+    <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5">
       {products.map((product) => (
-        <div key={product.id} className="rounded-lg bg-surface-2 px-3 py-1.5">
+        <div key={product.id} className="rounded-lg bg-surface-2 px-3 py-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-sm truncate">{product.name}</span>
@@ -48,7 +49,7 @@ const MarketPanel = ({ products, canEdit, onRemove }) => (
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3 mt-1">
+          <div className="space-y-1 mt-2">
             <Meter label="Demand" value={product.demand} />
             <Meter label="Supply" value={product.supply} />
           </div>

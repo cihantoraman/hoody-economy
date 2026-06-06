@@ -40,19 +40,19 @@ const Analytics = ({
 
   return (
     <div className="mb-4" data-tour="analytics">
-      <div className="flex items-center gap-3 mb-3">
-        <h2 className="font-semibold text-lg">Analytics</h2>
-        <button
-          onClick={onToggle}
-          className="h-8 px-3 rounded-md border border-line text-xs font-semibold text-muted hover:text-fg flex items-center gap-1.5"
-        >
-          <Icon path={ICON.chart} className="w-3.5 h-3.5" />
-          {open ? 'Hide' : 'Show'}
-        </button>
-      </div>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-line bg-surface shadow-card hover:bg-surface-2"
+      >
+        <span className="font-semibold text-lg">Analytics</span>
+        <span className="flex items-center gap-2 text-sm font-semibold text-muted">
+          {open ? 'Hide charts' : 'Show charts'}
+          <Icon path={open ? ICON.arrowUp : ICON.arrowDown} className="w-4 h-4" />
+        </span>
+      </button>
 
       {open && (
-        <Card className="p-4">
+        <Card className="p-4 mt-3">
           <div className="flex gap-1 border-b border-line mb-3">
             {TABS.map(({ id, label }) => (
               <button

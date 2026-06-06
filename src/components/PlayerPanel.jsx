@@ -30,7 +30,14 @@ const PlayerPanel = ({ player, strategies, onStrategy, chart }) => {
     <section data-tour="player" className="bg-surface rounded-xl border border-accent shadow-card p-4 md:p-5 mb-4">
       <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Your standing</h2>
-        {player.specialStatus && <span className={statusChipClass(player.specialStatus)}>{player.specialStatus}</span>}
+        {player.specialStatus ? (
+          <span className={statusChipClass(player.specialStatus)}>
+            {player.specialStatus}
+            {player.penaltyTime > 0 ? ` · ${player.penaltyTime}w left` : ''}
+          </span>
+        ) : (
+          <span className="text-xs text-muted">Clean record</span>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 md:items-stretch">

@@ -120,7 +120,7 @@ const Analytics = ({
                 <option value="">Select a player…</option>
                 {players.map((player) => (
                   <option key={player.id} value={player.id}>
-                    {player.name} ({player.level})
+                    {player.name === 'Player' ? 'You (Player)' : player.name} ({player.level})
                   </option>
                 ))}
               </select>

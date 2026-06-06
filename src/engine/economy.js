@@ -195,7 +195,7 @@ const stepManipulation = (players, params, turn, log) => {
   const bonus = new Map();
 
   let next = players;
-  if (turn % 3 === 0) {
+  if (turn % 2 === 0) {
     next = players.map((player) => {
       if (isFrozen(player)) return player;
 
@@ -204,10 +204,10 @@ const stepManipulation = (players, params, turn, log) => {
         player.capitalHistory[player.capitalHistory.length - 1] <
           player.capitalHistory[player.capitalHistory.length - 3];
       const baseChance =
-        player.strategy === 'Aggressive' ? 0.05
-          : player.strategy === 'Speculative' ? 0.04
-            : player.strategy === 'Risky' ? 0.025 : 0.008;
-      const desperation = losingMoney ? 0.03 : 0;
+        player.strategy === 'Aggressive' ? 0.2
+          : player.strategy === 'Speculative' ? 0.16
+            : player.strategy === 'Risky' ? 0.1 : 0.03;
+      const desperation = losingMoney ? 0.06 : 0;
       const watchlistModifier = player.specialStatus === 'Watchlist' ? -0.05 : 0;
       if (Math.random() >= baseChance + desperation + watchlistModifier) return player;
 

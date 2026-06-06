@@ -13,14 +13,25 @@ const JUSTICE = [
   { key: 'watchlist', label: 'Watchlist', className: 'text-warn' },
 ];
 
+const isYou = (player) => player.name === 'Player';
+
 const Row = ({ player, onSelect, children }) => (
   <button
     onClick={() => onSelect(player.id)}
-    className="w-full text-left mb-2 pb-2 border-b last:border-0 last:mb-0 last:pb-0 hover:bg-surface-2 rounded-md px-1"
+    className={`w-full text-left mb-2 pb-2 border-b last:border-0 last:mb-0 last:pb-0 rounded-md px-1.5 ${
+      isYou(player) ? 'bg-accent-weak ring-1 ring-accent/50 border-transparent' : 'hover:bg-surface-2'
+    }`}
   >
     {children}
   </button>
 );
+
+const PlayerName = ({ player }) =>
+  isYou(player) ? (
+    <span className="font-semibold text-accent">You (Player)</span>
+  ) : (
+    <span className="font-semibold">{player.name}</span>
+  );
 
 const Leaderboards = ({ topRichest, offenders, stats, onSelect }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:h-[24rem]">
@@ -30,7 +41,7 @@ const Leaderboards = ({ topRichest, offenders, stats, onSelect }) => (
         {topRichest.map((player) => (
           <Row key={player.id} player={player} onSelect={onSelect}>
             <div className="flex justify-between items-center">
-              <span className="font-semibold">{player.name}</span>
+              <PlayerName player={player} />
               <span className={`${tierTextClass(player.level)} inline-flex items-center gap-0.5`}>
                 <CoinIcon className="w-3 h-3" />
                 {player.capital.toLocaleString()}
@@ -70,7 +81,7 @@ const Leaderboards = ({ topRichest, offenders, stats, onSelect }) => (
           offenders.map((player) => (
             <Row key={player.id} player={player} onSelect={onSelect}>
               <div className="flex justify-between items-center">
-                <span className="font-semibold">{player.name}</span>
+                <PlayerName player={player} />
                 <div className="flex items-center gap-2">
                   {player.specialStatus && <span className={statusChipClass(player.specialStatus)}>{player.specialStatus}</span>}
                   {player.penaltyTime > 0 && (
